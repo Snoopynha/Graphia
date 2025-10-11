@@ -1,7 +1,7 @@
 // uiController.js
 import * as estado from './estado.js'; // Importa todas as variáveis de estado
-import { gerarListaAdjacencia, gerarMatrizAdjacencia } from './logic/grafo-manipulacao.js';
-import { buscaEmLargura, buscaEmProfundidade } from './logic/grafo-buscas.js';
+import { canvas, vertices, arestas, custosArestas } from './sketch.js';
+import { gerarListaAdjacencia, gerarMatrizAdjacencia } from './logic/estado.js';
 
 // mostrarRepresentacao() - grafo-codigo.js
 export function mostrarRepresentacao(tipo) {
@@ -29,24 +29,27 @@ export function mostrarRepresentacao(tipo) {
     document.getElementById('descricao-output').textContent = descricao;
 }
 
+// ativarModoAdicionarVertice() - grafo-codigo.js
 export function ativarModoAdicionarVertice() {
     estado.modoAtual = 'adicionarVertice';
     document.getElementById('canvas-container').style.cursor = 'crosshair';
 }
 
-// ... outras funções de ativar modo ...
+// ativarModoAdicionarArestaDirecionada() - grafo-codigo.js
 export function ativarModoAdicionarArestaDirecionada() {
     modoAdicionarAresta = true;
     arestaNDirecionada = false;
     verticeSelecionado = null;
 }
 
+// ativarModoAdicionarArestaNDirecionada() - grafo-codigo.js
 function ativarModoAdicionarArestaNDirecionada() {
     modoAdicionarAresta = true;
     arestaNDirecionada = true;
     verticeSelecionado = null;
 }
 
+// ativarModoRemover() - grafo-codigo.js
 function ativarModoEditor() {
     modoEditor = !modoEditor;
 
@@ -64,6 +67,7 @@ function ativarModoEditor() {
     }
 }
 
+// executarBusca(algoritmo) - grafo-buscas.js
 export function executarBusca(algoritmo) {
     if (intervaloAnimacao) {
         clearInterval(intervaloAnimacao);
@@ -76,7 +80,7 @@ export function executarBusca(algoritmo) {
     updateAnimation();
 }
 
-// ... todas as outras funções listadas acima ...
+// limparCores() - grafo-buscas.js
 function limparCores() {
     // Reset vertex appearance
     vertices.forEach(v => {
@@ -109,27 +113,28 @@ function limparCores() {
     select('#descricao-output').html('Pronto para nova execução.');
 }
 
+// criarModalSelecaoVertices(algoritmo) - grafo-buscas.js
 function criarModalSelecaoVertices(algoritmo) {
-    // Remove existing modal if any
+    // Remove modal existente, se houver
     const existingModal = select('.modal-busca');
     if (existingModal) existingModal.remove();
 
-    // Create modal container
+    // Cria o modal
     const modal = createDiv('');
     modal.class('modal-busca fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50');
     modal.parent(document.body);
 
-    // Create modal content
+    // Cria o conteúdo do modal
     const modalContent = createDiv('');
     modalContent.class('bg-white rounded-lg p-6 w-96');
     modalContent.parent(modal);
 
-    // Modal title
+    // Título do modal
     const title = createElement('h3', `Executar ${getAlgorithmName(algoritmo)}`);
     title.class('text-lg font-semibold mb-4');
     title.parent(modalContent);
 
-    // Start vertex selection
+    // Seleção do vértice inicial
     const startLabel = createElement('label', 'Vértice inicial:');
     startLabel.class('block mb-2');
     startLabel.parent(modalContent);
@@ -139,7 +144,7 @@ function criarModalSelecaoVertices(algoritmo) {
     startSelect.parent(modalContent);
     startSelect.option('Selecione um vértice', '');
 
-    // End vertex selection (optional)
+    // Seleção do vértice final (opcional)
     const endLabel = createElement('label', 'Vértice final (opcional):');
     endLabel.class('block mb-2');
     endLabel.parent(modalContent);
@@ -149,7 +154,7 @@ function criarModalSelecaoVertices(algoritmo) {
     endSelect.parent(modalContent);
     endSelect.option('Selecione um vértice', '');
 
-    // Weight input (for Dijkstra/UCS)
+    // Peso padrão para arestas (para Dijkstra/UCS)
     const weightDiv = createDiv('');
     weightDiv.class('mb-4 hidden');
     weightDiv.parent(modalContent);
@@ -164,7 +169,7 @@ function criarModalSelecaoVertices(algoritmo) {
     weightInput.class('w-full p-2 border rounded');
     weightInput.parent(weightDiv);
 
-    // Buttons
+    // Butãos Cancelar e Executar
     const buttonsDiv = createDiv('');
     buttonsDiv.class('flex justify-end space-x-2');
     buttonsDiv.parent(modalContent);
@@ -178,18 +183,18 @@ function criarModalSelecaoVertices(algoritmo) {
     runButton.class('px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600');
     runButton.parent(buttonsDiv);
 
-    // Populate vertex dropdowns
+    // Popula os dropdowns de vértices
     vertices.forEach(v => {
         startSelect.option(v.label, v.label);
         endSelect.option(v.label, v.label);
     });
 
-    // Show weight input for Dijkstra/UCS
+    // Mostra o input de peso para Dijkstra/UCS
     if (algoritmo === 'dijkstra' || algoritmo === 'ucs') {
         weightDiv.removeClass('hidden');
     }
 
-    // Run button handler
+    // Rodar o botão handler
     runButton.mousePressed(() => {
         const startLabel = startSelect.value();
         const endLabel = endSelect.value() || null;
@@ -202,7 +207,7 @@ function criarModalSelecaoVertices(algoritmo) {
         const startVertex = vertices.find(v => v.label === startLabel);
         const endVertex = endLabel ? vertices.find(v => v.label === endLabel) : null;
 
-        // Set default edge weights if provided
+        // Valida vertices
         if ((algoritmo === 'dijkstra' || algoritmo === 'ucs') && weightInput.value()) {
             const defaultWeight = parseInt(weightInput.value());
             if (!isNaN(defaultWeight)) {
@@ -217,7 +222,6 @@ function criarModalSelecaoVertices(algoritmo) {
             }
         }
 
-        // Run the selected algorithm
         let resultado;
         try {
             switch (algoritmo) {
@@ -237,15 +241,15 @@ function criarModalSelecaoVertices(algoritmo) {
                 return;
             }
 
-            // Show the animation
+            // Monta a animação
             animacaoBusca = resultado.animation;
             passoAtualAnimacao = 0;
             updateAnimation();
 
-            // Update the code output
+            // Atualiza a descrição e pseudocódigo
             atualizarOutputBusca(algoritmo, startVertex, endVertex);
 
-            // Close the modal
+            // Fecha o modal
             modal.remove();
 
         } catch (error) {
@@ -254,6 +258,7 @@ function criarModalSelecaoVertices(algoritmo) {
     });
 }
 
+// obterNomeAlgoritmo(algoritmo) - grafo-buscas.js
 function obterNomeAlgoritmo(algoritmo) {
     switch (algoritmo) {
         case 'bfs': return 'Busca em Largura (BFS)';
@@ -263,6 +268,7 @@ function obterNomeAlgoritmo(algoritmo) {
     }
 }
 
+// atualizarOutputBusca(algoritmo, startVertex, endVertex) - grafo-buscas.js
 function atualizarOutputBusca(algoritmo, startVertex, endVertex) {
     const descricaoOutput = select('#descricao-output');
     const codeOutput = select('#code-output');
@@ -297,6 +303,7 @@ function atualizarOutputBusca(algoritmo, startVertex, endVertex) {
     codeOutput.html(pseudocodigo);
 }
 
+// toggleSidebar() - index.html
 function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
     const icon = document.getElementById("toggle-icon");
