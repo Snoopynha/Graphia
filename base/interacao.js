@@ -1,4 +1,3 @@
-// interacao.js
 import { vertices, arestas, modoAtual } from './estado.js'; // Importe tudo que precisar
 
 // tratarClique() - grafo-editor.js

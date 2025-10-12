@@ -1,4 +1,3 @@
-// uiController.js
 import * as estado from './estado.js'; // Importa todas as variáveis de estado
 import { canvas, vertices, arestas, custosArestas } from './sketch.js';
 import { gerarListaAdjacencia, gerarMatrizAdjacencia } from './logic/estado.js';
