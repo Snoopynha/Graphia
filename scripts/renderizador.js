@@ -1,4 +1,4 @@
-import { vertices, arestas, custosArestas } from './estado.js';
+import * as estado from './estado.js';
 
 let canvas;
 
@@ -14,46 +14,20 @@ export function inicializarCanvas() {
 // Antigo draw() - grafo-editor.js
 export function desenharGrafo() {
     background(255);
-    // Desenha os círculos
-    for (let v of vertices) {
-        // Preenchimento branco
-        fill(255);
-        // Borda preta
-        if (v.cor) {
-            fill(v.cor);
-        } else {
-            fill(255); // Branco por padrão
-        }
-        circle(v.x, v.y, 70);
+    // Desenha primeiro as arestas
+    for (let a of estado.arestas) {
+        stroke(a.cor || 0);
+        strokeWeight(2);
+        line(a.de.x, a.de.y, a.para.x, a.para.y);
 
-        if (v.label) {
-            fill(0);
-            stroke(0);
-            text(v.label, v.x, v.y);
-        }
+        // Desenho de setas, pesos, laços
 
-        // Texto adicional (usado para mensagens de busca)
-        if (v.texto) {
-            textSize(12);
-            text(v.texto, v.x, v.y + 50);
-            textSize(20);
-        }
-    }
-
-    for (let a of arestas) {
-        // Configura a cor da aresta
-        if (a.cor) {
-            stroke(a.cor);
-        } else {
-            stroke(0); // Preto por padrão
-        }
-        const raio = 35;
+        const raio = 35; // raio do vértice
 
         // Caso 1: auto-laço (de === para)
         if (a.de === a.para) {
             const cx = a.de.x;
             const cy = a.de.y;
-            const r = 35; // raio do vértice
 
             // Parâmetros do laço
             const loopRadiusX = 40;
@@ -64,9 +38,9 @@ export function desenharGrafo() {
 
             // Ponto inicial e final do laço (em cima do vértice)
             const x1 = cx - loopRadiusX / 2;
-            const y1 = cy - r;
+            const y1 = cy - raio;
             const x2 = cx + loopRadiusX / 2;
-            const y2 = cy - r;
+            const y2 = cy - raio;
 
             // Pontos de controle (acima do vértice)
             const cx1 = x1;
@@ -135,12 +109,12 @@ export function desenharGrafo() {
                 desenharSeta(x1, y1, x2, y2);
             }
         }
-        // Adicione isto para mostrar pesos
+        // Mostra os pesos
         const key = `${a.de.label}-${a.para.label}`;
         const reverseKey = `${a.para.label}-${a.de.label}`;
         const weight = custosArestas[key] || custosArestas[reverseKey] || 1;
 
-        // Mostra o peso no meio da aresta
+        //Coloca o peso no meio da aresta
         const midX = (a.de.x + a.para.x) / 2;
         const midY = (a.de.y + a.para.y) / 2;
 
@@ -150,11 +124,24 @@ export function desenharGrafo() {
         fill(0);
         text(weight, midX, midY);
     }
+
+    // Desenha os vértices 
+    for (let v of estado.vertices) {
+        stroke(0);
+        strokeWeight(1);
+        fill(v.cor || 255);
+        circule(v.x, v.y, 70);
+
+        if (v.rotulo) {
+            fill(0);
+            noStroke();
+            text(v.rotulo, v.x, v.y);
+        }
+    }
 }
 
 // desenharSeta() - grafo-editor.js
 function desenharSeta(x1, y1, x2, y2) {
-    // ... cole aqui o conteúdo da sua função desenharSeta()
     const angle = atan2(y2 - y1, x2 - x1);
     const tam = 10;
 

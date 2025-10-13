@@ -1,6 +1,7 @@
-import { vertices, arestas, modoAtual } from './estado.js'; // Importe tudo que precisar
+import * as estado from './estado.js';
 
 // tratarClique() - grafo-editor.js
+// TEM QUE ALTERAR
 export function tratarClique() {
     if (modoEditor) {
         const v = obterVerticeClicado(mouseX, mouseY);
@@ -140,10 +141,14 @@ export function tratarClique() {
 
 }
 
+export function mouseSolto() {
+    estado.arrastando = false;
+}
+
 // Antiga mouseDragged() - grafo-editor.js
 export function mouseArrastado() {
-    if ((modoMover || modoEditor) && arrastando) {
-        for (let info of offsetArrasto) {
+    if (estado.modoAtual === 'editar' && estado.arrastando) {
+        for (let info of estado.deslocamentoArrasto) {
             info.vx.x = mouseX - info.dx;
             info.vx.y = mouseY - info.dy;
         }
@@ -152,31 +157,30 @@ export function mouseArrastado() {
 
 // Antiga keyPressed() - grafo-editor.js
 export function teclaPressionada() {
-    if (modoEditor && keyCode === DELETE || keyCode === BACKSPACE) {
-        if (verticesSelecionados.length > 0) {
+    if (estado.modoAtual === 'editar' && (keyCode === DELETE || keyCode === BACKSPACE)) {
+        if (estado.verticesSelecionados.length > 0) {
             // Remove vértices selecionados
-            verticesSelecionados.forEach(v => {
-                const index = vertices.indexOf(v);
-                if (index !== -1) vertices.splice(index, 1);
+            estado.verticesSelecionados.forEach(v => {
+                const index = estado.vertices.indexOf(v);
+                if (index !== -1) estado.vertices.splice(index, 1);
 
                 // Remove arestas ligadas a ele
-                for (let i = arestas.length - 1; i >= 0; i--) {
-                    if (arestas[i].de === v || arestas[i].para === v) {
-                        arestas.splice(i, 1);
+                for (let i = estado.arestas.length - 1; i >= 0; i--) {
+                    if (estado.arestas[i].de === v || estado.arestas[i].para === v) {
+                        estado.arestas.splice(i, 1);
                     }
                 }
             });
 
-            verticesSelecionados = [];
+            estado.verticesSelecionados = [];
         }
     }
 }
 
 // obterVerticeClicado() - grafo-editor.js
 function obterVerticeClicado(mx, my) {
-    for (let v of vertices) {
-        const d = dist(mx, my, v.x, v.y);
-        if (d <= 35) return v; // Raio do círculo
+    for (let v of estado.vertices) {
+        if (dist(mx, my, v.x, v.y) <= 35) return v; // Raio do círculo
     }
 
     return null;

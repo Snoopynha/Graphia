@@ -2,21 +2,22 @@ import * as estado from './estado.js';
 
 // nextStep() - grafo-editor.js
 export function proximoPasso() {
-    if (passoAtualAnimacao < animacaoBusca.length - 1) {
-        passoAtualAnimacao++;
-        updateAnimation();
+    if (estado.passoAtualAnimacao < estado.animacaoBusca.length - 1) {
+        estado.passoAtualAnimacao++;
+        atualizarPassoAnimacao();
     }
 }
 
 // prevStep() - grafo-editor.js
 export function passoAnterior() {
-    if (passoAtualAnimacao > 0) {
-        passoAtualAnimacao--;
-        updateAnimation();
+    if (estado.passoAtualAnimacao > 0) {
+        estado.passoAtualAnimacao--;
+        atualizarPassoAnimacao();
     }
 }
 
 // togglePlay() - grafo-editor.js
+// TEM QUE ALTERAR
 export function alternarReproducao() {
     const playButton = select('#animation-controls button:nth-child(3)');
 
@@ -48,16 +49,17 @@ export function alternarReproducao() {
 }
 
 // changeAnimationSpeed() - grafo-editor.js
-export function mudarVelocidadeAnimacao(velocidade) {
-    animationSpeed = parseInt(velocidade);
-    if (isPlaying) {
+export function mudarVelocidadeAnimacao() {
+    animationSpeed = parseInt(estado.velocidadeAnimacao);
+    if (estado.passoAtualAnimacao > 0) {
         // Se está rodando, reinicia com a nova velocidade
-        togglePlay(); // Pausa
-        togglePlay(); // Reinicia
+        alternarReproducao(); // Pausa
+        alternarReproducao(); // Reinicia
     }
 }
 
 // updateAnimation() - grafo-editor.js
+// TEM QUE ALTERAR
 function atualizarPassoAnimacao() {
     if (animacaoBusca.length === 0) return;
 

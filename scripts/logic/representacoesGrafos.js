@@ -1,4 +1,4 @@
-// window.gerarListaAdjacencia = function() - grafo-manipulacao.js
+// Antigo window.gerarListaAdjacencia = function() - grafo-manipulacao.js
 export function gerarListaAdjacencia(vertices, arestas) {
     const lista = {};
     for (let v of vertices) {
@@ -17,7 +17,7 @@ export function gerarListaAdjacencia(vertices, arestas) {
     return saida;
 }
 
-// window.gerarMatrizAdjacencia = function() - grafo-manipulacao.js
+// Antigo window.gerarMatrizAdjacencia = function() - grafo-manipulacao.js
 export function gerarMatrizAdjacencia(vertices, arestas) {
     const rotulos = vertices.map(v => v.rotulo);
     const n = rotulos.length;
@@ -40,7 +40,7 @@ export function gerarMatrizAdjacencia(vertices, arestas) {
     return saida;
 }
 
-// window.gerarMatrizIncidencia = function() - grafo-manipulacao.js
+// Antigo window.gerarMatrizIncidencia = function() - grafo-manipulacao.js
 export function gerarMatrizIncidencia(vertices, arestas) {
     const rotulos = vertices.map(v => v.rotulo);
     const n = rotulos.length;
