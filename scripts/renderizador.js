@@ -4,7 +4,8 @@ let canvas;
 
 // Antigo setup() - grafo-editor.js
 export function inicializarCanvas() {
-    canvas = createCanvas(800, 600);
+    const container = document.getElementById('canvas-container');
+    canvas = createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('canvas-container');
     textAlign(CENTER, CENTER);
     textSize(20);
