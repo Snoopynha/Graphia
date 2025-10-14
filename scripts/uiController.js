@@ -1,6 +1,5 @@
 import * as estado from './estado.js'; // Importa todas as variáveis de estado
-import { canvas, vertices, arestas, custosArestas } from './sketch.js';
-import { gerarListaAdjacencia, gerarMatrizAdjacencia } from './logic/estado.js';
+import { gerarListaAdjacencia, gerarMatrizAdjacencia, gerarMatrizIncidencia } from './logic/representacoesGrafos.js';
 
 // mostrarRepresentacao() - grafo-codigo.js
 export function mostrarRepresentacao(tipo) {
@@ -36,16 +35,14 @@ export function ativarModoAdicionarVertice() {
 
 // ativarModoAdicionarArestaDirecionada() - grafo-codigo.js
 export function ativarModoAdicionarArestaDirecionada() {
-    modoAdicionarAresta = true;
-    arestaNDirecionada = false;
-    verticeSelecionado = null;
+    estado.modoAtual = 'adicionarAresta';
+    estado.verticeSelecionado = null;
 }
 
 // ativarModoAdicionarArestaNDirecionada() - grafo-codigo.js
 function ativarModoAdicionarArestaNDirecionada() {
-    modoAdicionarAresta = true;
-    arestaNDirecionada = true;
-    verticeSelecionado = null;
+    estado.modoAtual = 'adicionarArestaNaoDirecionada';
+    estado.verticeSelecionado = null;
 }
 
 // ativarModoRemover() - grafo-codigo.js

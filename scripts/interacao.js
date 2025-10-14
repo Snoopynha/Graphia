@@ -138,7 +138,6 @@ export function tratarClique() {
     }
 
     return;
-
 }
 
 export function mouseSolto() {
@@ -180,7 +179,7 @@ export function teclaPressionada() {
 // obterVerticeClicado() - grafo-editor.js
 function obterVerticeClicado(mx, my) {
     for (let v of estado.vertices) {
-        if (dist(mx, my, v.x, v.y) <= 35) return v; // Raio do círculo
+        if (dist(mx, my, v.x, v.y) <= 35) return v;
     }
 
     return null;
