@@ -1,25 +1,30 @@
 import * as estado from './estado.js'; // Importa todas as variáveis de estado
-import { gerarListaAdjacencia, gerarMatrizAdjacencia, gerarMatrizIncidencia } from './logic/representacoesGrafos.js';
+import { gerarListaAdjacencia, gerarMatrizAdjacencia, gerarMatrizIncidencia } from './logic/representacoesGrafo.js';
+import { buscaEmLargura, buscaEmProfundidade, dijkstra, buscaAEstrela } from './logic/algoritmosBusca.js';
+import { atualizarPassoAnimacao } from './animacao.js';
 
-// mostrarRepresentacao() - grafo-codigo.js
+/**
+ * Exibe a representação de um grafo (lista, matriz de adjacência, matriz de incidência) no painel de código.
+ * @param {string} tipo - O tipo de representação ('lista', 'matrizAdj', 'matrizInc').
+ */
+// Antigo mostrarRepresentacao() - grafo-codigo.js
 export function mostrarRepresentacao(tipo) {
+    const { vertices, arestas } = estado;
     let codigo = '';
     let descricao = '';
 
     switch (tipo) {
         case 'lista':
-            codigo = window.gerarListaAdjacencia();
-            descricao = 'A Lista de Adjacência representa o grafo usando um objeto ou dicionário, onde cada vértice aponta para uma lista de vértices vizinhos. É eficiente em termos de espaço para grafos esparsos e ideal para percursos como BFS e DFS.';
+            codigo = gerarListaAdjacencia(vertices, arestas);
+            descricao = 'A Lista de Adjacência representa o grafo usando um mapa, onde cada vértice aponta para uma lista de seus vizinhos.';
             break;
-
         case 'matrizAdj':
-            codigo = window.gerarMatrizAdjacencia();
-            descricao = 'A Matriz de Adjacência usa uma matriz (tabela) onde as linhas e colunas representam os vértices. Um valor 1 indica uma conexão entre vértices, e 0 indica ausência. É útil para verificar se dois vértices são adjacentes em tempo constante.';
+            codigo = gerarMatrizAdjacencia(vertices, arestas);
+            descricao = 'A Matriz de Adjacência usa uma tabela onde um valor 1 indica uma conexão entre vértices, e 0 a ausência dela.';
             break;
-
         case 'matrizInc':
-            codigo = window.gerarMatrizIncidencia();
-            descricao = 'A Matriz de Incidência representa o grafo com vértices nas linhas e arestas nas colunas. Para grafos direcionados, usa -1 para origem e 1 para destino. Para não direcionados, usa 1 em ambas as posições. É útil em aplicações algébricas e fluxos.';
+            codigo = gerarMatrizIncidencia(vertices, arestas);
+            descricao = 'A Matriz de Incidência relaciona vértices (linhas) com arestas (colunas). Útil para certas análises de grafos.';
             break;
     }
 
@@ -27,296 +32,308 @@ export function mostrarRepresentacao(tipo) {
     document.getElementById('descricao-output').textContent = descricao;
 }
 
-// ativarModoAdicionarVertice() - grafo-codigo.js
-export function ativarModoAdicionarVertice() {
-    estado.modoAtual = 'adicionarVertice';
-    document.getElementById('canvas-container').style.cursor = 'crosshair';
-}
+/**
+ * Altera o modo de interação atual do canvas.
+ * @param {string} novoModo - O novo modo a ser ativado.
+ */
+// Antigo ativarModoAdicionarVertice() - grafo-codigo.js | ativarModoAdicionarArestaDirecionada() - grafo-codigo.js | ativarModoAdicionarArestaNDirecionada() - grafo-codigo.js | ativarModoRemover() - grafo-codigo.js
+export function ativarModo(novoModo) {
+    estado.modoAtual = novoModo;
+    const canvasContainer = document.getElementById('canvas-container');
 
-// ativarModoAdicionarArestaDirecionada() - grafo-codigo.js
-export function ativarModoAdicionarArestaDirecionada() {
-    estado.modoAtual = 'adicionarAresta';
-    estado.verticeSelecionado = null;
-}
+    // Limpa as seleções quando troca de modo
+    if (estado.verticeSelecionado) {
+        estado.verticeSelecionado.cor = null;
+        estado.verticeSelecionado = null;
+    }
 
-// ativarModoAdicionarArestaNDirecionada() - grafo-codigo.js
-function ativarModoAdicionarArestaNDirecionada() {
-    estado.modoAtual = 'adicionarArestaNaoDirecionada';
-    estado.verticeSelecionado = null;
-}
-
-// ativarModoRemover() - grafo-codigo.js
-function ativarModoEditor() {
-    modoEditor = !modoEditor;
-
-    const botao = document.getElementById('botaoEditar');
-    botao.textContent = modoEditor ? 'Sair do Modo Editor' : 'Editar';
-
-    if (modoEditor) {
-        canvas.elt.style.cursor = 'pointer';
-    } else {
-        canvas.elt.style.filter = '';
-        canvas.elt.style.cursor = 'default';
-        verticesSelecionados.forEach(v => delete v.cor);
-        verticesSelecionados = [];
-        verticeSelecionadoParaEdicao = null;
+    // Atualiza o cursor do canvas
+    if (novoModo === 'adicionarVertice') {
+        canvasContainer.style.cursor = 'crosshair';
+    } else if (novoModo === 'adicionarArestaDirecionada' || novoModo === 'adicionarArestaNaoDirecionada') {
+        canvasContainer.style.cursor = 'pointer';
+    } else { // 'remover' ou 'nenhum'
+        canvasContainer.style.cursor = 'default';
     }
 }
 
-// executarBusca(algoritmo) - grafo-buscas.js
-export function executarBusca(algoritmo) {
-    if (intervaloAnimacao) {
-        clearInterval(intervaloAnimacao);
-        intervaloAnimacao = null;
-    }
-
-    criarModalSelecaoVertices(algoritmo);
-    animacaoBusca = resultado.animation;
-    passoAtualAnimacao = 0;
-    updateAnimation();
-}
-
-// limparCores() - grafo-buscas.js
-function limparCores() {
-    // Reset vertex appearance
-    vertices.forEach(v => {
+/**
+ * Limpa as cores de feedback visual do grafo e reseta o estado da animação.
+ */
+// Antigo limparCores() - grafo-buscas.js
+export function limparCores() {
+    // Reseta a aparência dos vértices
+    estado.vertices.forEach(v => {
         v.cor = null;
         v.texto = null;
     });
-
-    // Reset edge appearance
-    arestas.forEach(a => {
+    // Reseta a aparência das arestas
+    estado.arestas.forEach(a => {
         a.cor = null;
     });
 
-    // Reset search state
-    animacaoBusca = [];
-    passoAtualAnimacao = 0;
+    // Reseta o estado da busca
+    estado.animacaoBusca = [];
+    estado.passoAtualAnimacao = 0;
 
-    // Stop any running animation
-    if (intervaloAnimacao) {
-        clearInterval(intervaloAnimacao);
-        intervaloAnimacao = null;
-    }
-    if (playInterval) {
-        clearInterval(playInterval);
-        playInterval = null;
-    }
-    isPlaying = false;
-
-    // Reset UI
-    select('#code-output').html('Cores e estado de busca resetados.');
-    select('#descricao-output').html('Pronto para nova execução.');
+    // Limpa o painel de código e descrição
+    document.getElementById('code-output').textContent = 'Selecione uma forma de visualização para ver o código correspondente aqui.';
+    document.getElementById('descricao-output').textContent = 'Selecione uma forma de visualização para ver a explicação aqui.';
 }
 
-// criarModalSelecaoVertices(algoritmo) - grafo-buscas.js
-function criarModalSelecaoVertices(algoritmo) {
-    // Remove modal existente, se houver
-    const existingModal = select('.modal-busca');
-    if (existingModal) existingModal.remove();
-
-    // Cria o modal
-    const modal = createDiv('');
-    modal.class('modal-busca fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50');
-    modal.parent(document.body);
-
-    // Cria o conteúdo do modal
-    const modalContent = createDiv('');
-    modalContent.class('bg-white rounded-lg p-6 w-96');
-    modalContent.parent(modal);
-
-    // Título do modal
-    const title = createElement('h3', `Executar ${getAlgorithmName(algoritmo)}`);
-    title.class('text-lg font-semibold mb-4');
-    title.parent(modalContent);
-
-    // Seleção do vértice inicial
-    const startLabel = createElement('label', 'Vértice inicial:');
-    startLabel.class('block mb-2');
-    startLabel.parent(modalContent);
-
-    const startSelect = createSelect();
-    startSelect.class('w-full mb-4 p-2 border rounded');
-    startSelect.parent(modalContent);
-    startSelect.option('Selecione um vértice', '');
-
-    // Seleção do vértice final (opcional)
-    const endLabel = createElement('label', 'Vértice final (opcional):');
-    endLabel.class('block mb-2');
-    endLabel.parent(modalContent);
-
-    const endSelect = createSelect();
-    endSelect.class('w-full mb-4 p-2 border rounded');
-    endSelect.parent(modalContent);
-    endSelect.option('Selecione um vértice', '');
-
-    // Peso padrão para arestas (para Dijkstra/UCS)
-    const weightDiv = createDiv('');
-    weightDiv.class('mb-4 hidden');
-    weightDiv.parent(modalContent);
-
-    const weightLabel = createElement('label', 'Peso padrão para arestas:');
-    weightLabel.class('block mb-2');
-    weightLabel.parent(weightDiv);
-
-    const weightInput = createInput('1');
-    weightInput.attribute('type', 'number');
-    weightInput.attribute('min', '1');
-    weightInput.class('w-full p-2 border rounded');
-    weightInput.parent(weightDiv);
-
-    // Butãos Cancelar e Executar
-    const buttonsDiv = createDiv('');
-    buttonsDiv.class('flex justify-end space-x-2');
-    buttonsDiv.parent(modalContent);
-
-    const cancelButton = createButton('Cancelar');
-    cancelButton.class('px-4 py-2 bg-gray-300 rounded hover:bg-gray-400');
-    cancelButton.parent(buttonsDiv);
-    cancelButton.mousePressed(() => modal.remove());
-
-    const runButton = createButton('Executar');
-    runButton.class('px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600');
-    runButton.parent(buttonsDiv);
-
-    // Popula os dropdowns de vértices
-    vertices.forEach(v => {
-        startSelect.option(v.label, v.label);
-        endSelect.option(v.label, v.label);
-    });
-
-    // Mostra o input de peso para Dijkstra/UCS
-    if (algoritmo === 'dijkstra' || algoritmo === 'ucs') {
-        weightDiv.removeClass('hidden');
+/**
+ * Inicia o processo de uma busca, abrindo um modal para o usuário selecionar os vértices.
+ * @param {string} algoritmo - O algoritmo a ser executado ('bfs', 'dfs', 'dijkstra', 'aEstrela').
+ */
+// Antigo executarBusca(algoritmo) - grafo-buscas.js
+export function executarBusca(algoritmo) {
+    if (estado.vertices.length === 0 || estado.arestas.length === 0) {
+        alert('O grafo está vazio. Adicione vértices e arestas antes de executar uma busca.');
+        return;
     }
 
-    // Rodar o botão handler
-    runButton.mousePressed(() => {
-        const startLabel = startSelect.value();
-        const endLabel = endSelect.value() || null;
+    if (estado.vertices.length < 2) {
+        alert('O grafo não possui vértices suficientes. Você precisa de pelo menos dois vértices para executar uma busca!');
+        return;
+    }
 
-        if (!startLabel) {
-            alert('Por favor, selecione um vértice inicial');
+    criarModalSelecaoVertices(algoritmo);
+}
+
+/**
+ * Cria e exibe um modal para o usuário selecionar os vértices de início e fim da busca.
+ * @param {string} algoritmo - O nome do algoritmo de busca.
+ */
+// Antigo criarModalSelecaoVertices(algoritmo) - grafo-buscas.js
+function criarModalSelecaoVertices(algoritmo) {
+    // Remove modal existente, se houver
+    const modalExistente = document.cre('.modal-busca');
+    if (modalExistente) modalExistente.remove();
+
+    // Cria os elementos do modal
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-busca fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+
+    const modalContent = document.createElement('div');
+    modalContent.className = 'bg-white rounded-lg p-6 w-96';
+
+    // Título
+    modalContent.innerHTML = `<h3 class="text-lg font-semibold mb-4">Executar ${obterNomeAlgoritmo(algoritmo)}</h3>`;
+
+    // Dropdown Vértice Inicial
+    modalContent.innerHTML += `<label class="block mb-2">Vértice inicial:</label>`;
+    const selectInicial = document.createElement('select');
+    selectInicial.className = 'w-full mb-4 p-2 border rounded';
+
+    // Dropdown Vértice Final
+    modalContent.innerHTML += `<label class="block mb-2">Vértice final:</label>`;
+    const selectFinal = document.createElement('select');
+    selectFinal.className = 'w-full mb-4 p-2 border rounded';
+
+    // Adiciona as opções aos selects
+    estado.vertices.forEach(v => {
+        selectInicial.options.add(new Option(v.rotulo, v.rotulo));
+        selectFinal.options.add(new Option(v.rotulo, v.rotulo));
+    });
+    modalContent.appendChild(selectInicial);
+    modalContent.appendChild(selectFinal);
+
+    // Botões
+    const botoesDiv = document.createElement('div');
+    botoesDiv.className = 'flex justify-end space-x-2';
+
+    const btnCancelar = document.createElement('button');
+    btnCancelar.textContent = 'Cancelar';
+    btnCancelar.className = 'px-4 py-2 bg-gray-300 rounded hover:bg-gray-400';
+    btnCancelar.onclick = () => modalOverlay.remove();
+
+    const btnExecutar = document.createElement('button');
+    btnExecutar.textContent = 'Executar';
+    btnExecutar.className = 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600';
+
+    // Lógica do botão Executar
+    btnExecutar.onclick = () => {
+        const rotuloInicial = selectInicial.value;
+        const rotuloFinal = selectFinal.value;
+
+        // Valida se os vértices foram selecionados
+        if (!rotuloInicial || !rotuloFinal) {
+            alert('Por favor, selecione os vértices de início e fim.');
             return;
         }
 
-        const startVertex = vertices.find(v => v.label === startLabel);
-        const endVertex = endLabel ? vertices.find(v => v.label === endLabel) : null;
-
-        // Valida vertices
-        if ((algoritmo === 'dijkstra' || algoritmo === 'ucs') && weightInput.value()) {
-            const defaultWeight = parseInt(weightInput.value());
-            if (!isNaN(defaultWeight)) {
-                arestas.forEach(a => {
-                    const key = `${a.de.label}-${a.para.label}`;
-                    custosArestas[key] = defaultWeight;
-                    if (!a.direcionada) {
-                        const reverseKey = `${a.para.label}-${a.de.label}`;
-                        custosArestas[reverseKey] = defaultWeight;
-                    }
-                });
-            }
+        // Valida se os vértices são diferentes
+        if (rotuloInicial === rotuloFinal) {
+            alert('O vértice inicial e final não podem ser o mesmo. Selecione vértices diferentes.');
+            return;
         }
 
+        // Encontra os vértices correspondentes
+        const verticeInicial = estado.vertices.find(v => v.rotulo === rotuloInicial);
+        const verticeFinal = estado.vertices.find(v => v.rotulo === rotuloFinal);
+
         let resultado;
+        // Tenta executar o algoritmo de busca selecionado
         try {
             switch (algoritmo) {
                 case 'bfs':
-                    resultado = bfs(startVertex, endVertex);
+                    resultado = buscaEmLargura(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
                     break;
+
                 case 'dfs':
-                    resultado = dfs(startVertex, endVertex);
+                    resultado = buscaEmProfundidade(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
                     break;
+
                 case 'dijkstra':
-                    resultado = dijkstra(startVertex, endVertex);
+                    resultado = dijkstra(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
                     break;
+
+                case 'aEstrela':
+                    resultado = buscaAEstrela(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
+                    break;
+
+                default:
+                    throw new Error('Algoritmo desconhecido: ' + algoritmo);
             }
 
-            if (resultado.error) {
-                alert(resultado.error);
-                return;
+            if (resultado && resultado.animacao) {
+                estado.animacaoBusca = resultado.animacao;
+                estado.passoAtualAnimacao = 0;
+                atualizarPassoAnimacao();
+                atualizarOutputBusca(algoritmo, verticeInicial, verticeFinal);
             }
-
-            // Monta a animação
-            animacaoBusca = resultado.animation;
-            passoAtualAnimacao = 0;
-            updateAnimation();
-
-            // Atualiza a descrição e pseudocódigo
-            atualizarOutputBusca(algoritmo, startVertex, endVertex);
-
-            // Fecha o modal
-            modal.remove();
-
-        } catch (error) {
-            alert('Erro: ' + error.message);
+        } catch (erro) {
+            alert('Ocorreu um erro ao executar a busca: ' + erro.message);
+        } finally {
+            modalOverlay.remove();
         }
-    });
+    };
+
+    // Adiciona os botões ao modal
+    botoesDiv.appendChild(btnCancelar);
+    botoesDiv.appendChild(btnExecutar);
+    modalContent.appendChild(botoesDiv);
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
 }
 
-// obterNomeAlgoritmo(algoritmo) - grafo-buscas.js
+/**
+ * Retorna o nome completo de um algoritmo para exibição na UI.
+ * @param {string} algoritmo - O identificador do algoritmo.
+ * @returns {string} O nome formatado.
+ */
+// Antigo obterNomeAlgoritmo(algoritmo) - grafo-buscas.js
 function obterNomeAlgoritmo(algoritmo) {
-    switch (algoritmo) {
-        case 'bfs': return 'Busca em Largura (BFS)';
-        case 'dfs': return 'Busca em Profundidade (DFS)';
-        case 'dijkstra': return 'Algoritmo de Dijkstra';
-        default: return 'Busca';
-    }
+    const nomes = {
+        bfs: 'Busca em Largura (BFS)',
+        dfs: 'Busca em Profundidade (DFS)',
+        dijkstra: 'Algoritmo de Dijkstra',
+        aEstrela: 'Algoritmo A* (A-Estrela)',
+    };
+    return nomes[algoritmo] || 'Algoritmo Desconhecido';
 }
 
-// atualizarOutputBusca(algoritmo, startVertex, endVertex) - grafo-buscas.js
-function atualizarOutputBusca(algoritmo, startVertex, endVertex) {
-    const descricaoOutput = select('#descricao-output');
-    const codeOutput = select('#code-output');
+/**
+ * Atualiza o painel de código com a descrição e o pseudocódigo do algoritmo em execução.
+ * @param {string} algoritmo - O identificador do algoritmo.
+ * @param {object} verticeInicial - O vértice onde a busca começou.
+ * @param {object} verticeFinal - O vértice de destino da busca.
+ */
+// Antigo atualizarOutputBusca(algoritmo, startVertex, endVertex) - grafo-buscas.js
+function atualizarOutputBusca(algoritmo, verticeInicial, verticeFinal) {
+    const descricaoOutput = document.getElementById('descricao-output');
+    const codigoOutput = document.getElementById('code-output');
 
-    let descricao = '';
+    let descricao = `Executando ${obterNomeAlgoritmo(algoritmo)} de '${verticeInicial.rotulo}' para '${verticeFinal.rotulo}'.`;
     let pseudocodigo = '';
 
     switch (algoritmo) {
         case 'bfs':
-            descricao = `Executando Busca em Largura começando no vértice ${startVertex.label}`;
-            if (endVertex) descricao += ` para encontrar caminho até ${endVertex.label}`;
-
-            pseudocodigo = `// Pseudocódigo BFS aqui...`;
+            pseudocodigo = `
+1. Criar uma FILA e adicionar o VÉRTICE INICIAL.
+2. Marcar o VÉRTICE INICIAL como visitado.
+3. Enquanto a FILA não estiver vazia:
+4.   Remover VÉRTICE ATUAL da FILA.
+5.   Se VÉRTICE ATUAL for o DESTINO, parar.
+6.   Para cada VIZINHO não visitado do VÉRTICE ATUAL:
+7.     Marcar VIZINHO como visitado.
+8.     Adicionar VIZINHO na FILA.
+            `;
             break;
-
         case 'dfs':
-            descricao = `Executando Busca em Profundidade começando no vértice ${startVertex.label}`;
-            if (endVertex) descricao += ` para encontrar caminho até ${endVertex.label}`;
-
-            pseudocodigo = `// Pseudocódigo DFS aqui...`;
+            pseudocodigo = `
+1. Criar uma PILHA e adicionar o VÉRTICE INICIAL.
+2. Enquanto a PILHA não estiver vazia:
+3.   Remover VÉRTICE ATUAL da PILHA.
+4.   Se VÉRTICE ATUAL não foi visitado:
+5.     Marcar como visitado.
+6.     Se VÉRTICE ATUAL for o DESTINO, parar.
+7.     Para cada VIZINHO do VÉRTICE ATUAL:
+8.       Adicionar VIZINHO na PILHA.
+            `;
             break;
-
         case 'dijkstra':
-            descricao = `Executando Algoritmo de Dijkstra começando no vértice ${startVertex.label}`;
-            if (endVertex) descricao += ` para encontrar caminho mais curto até ${endVertex.label}`;
+            pseudocodigo = `
+1. Criar FILA DE PRIORIDADE para os vértices.
+2. Definir distância de todos como INFINITO, menos o INICIAL (0).
+3. Enquanto a FILA não estiver vazia:
+4.   Extrair VÉRTICE ATUAL (com menor distância) da FILA.
+5.   Para cada VIZINHO do VÉRTICE ATUAL:
+6.     Calcular nova distância (dist(atual) + peso da aresta).
+7.     Se nova distância < dist(vizinho):
+8.       Atualizar distância do VIZINHO e seu predecessor.
+9.       Atualizar prioridade do VIZINHO na FILA.
+            `;
+            break;
+        case 'aEstrela':
+            pseudocodigo = `
+// f(n) = g(n) + h(n)
+// g(n) = custo real do início até n
+// h(n) = heurística (distância em linha reta) de n até o fim
 
-            pseudocodigo = `// Pseudocódigo Dijkstra aqui...`;
+1. Criar FILA DE PRIORIDADE para os vértices (ordenar por f(n)).
+2. Adicionar VÉRTICE INICIAL na FILA.
+3. Enquanto a FILA não estiver vazia:
+4.   Extrair VÉRTICE ATUAL (com menor f(n)) da FILA.
+5.   Se VÉRTICE ATUAL for o DESTINO, reconstruir caminho e parar.
+6.   Para cada VIZINHO do VÉRTICE ATUAL:
+7.     Calcular novo g(vizinho).
+8.     Se novo g(vizinho) < g(vizinho) conhecido:
+9.       Atualizar g(vizinho), predecessor e f(vizinho).
+10.      Adicionar/Atualizar VIZINHO na FILA.
+            `;
             break;
     }
 
-    descricaoOutput.html(descricao);
-    codeOutput.html(pseudocodigo);
+    descricaoOutput.textContent = descricao;
+    codigoOutput.textContent = pseudocodigo.trim();
 }
 
-// toggleSidebar() - index.html
-function toggleSidebar() {
-    const sidebar = document.getElementById("sidebar");
-    const icon = document.getElementById("toggle-icon");
-    const openBtn = document.getElementById("open-sidebar");
-    const isOpen = sidebar.classList.contains("w-64");
+/**
+ * Controla a visibilidade da barra lateral e seus elementos.
+ */
+// Antigo toggleSidebar() - index.html
+export function alternarBarraLateral() {
+    const barraLateral = document.getElementById("sidebar");
+    const iconeSeta = document.getElementById("toggle-icon");
+    const btnAbrir = document.getElementById("open-sidebar");
+    const estaAberta = barraLateral.classList.contains("w-64");
 
-    if (isOpen) {
-        sidebar.classList.remove("w-64", "p-4");
-        sidebar.classList.add("w-0", "overflow-hidden");
-        icon.classList.remove("fa-chevron-left");
-        icon.classList.add("fa-chevron-right");
-        openBtn.classList.remove("hidden");
+    if (estaAberta) {
+        // Fechar a barra lateral 
+        barraLateral.classList.remove("w-64", "p-4");
+        barraLateral.classList.add("w-0", "overflow-hidden");
+        // Esconder o botão de fechar e mostrar o de abrir
+        btnAbrir.classList.remove("hidden");
+        iconeSeta.classList.remove("fa-chevron-left");
+        iconeSeta.classList.add("fa-chevron-right");
     } else {
-        sidebar.classList.remove("w-0", "overflow-hidden");
-        sidebar.classList.add("w-64", "p-4");
-        icon.classList.remove("fa-chevron-right");
-        icon.classList.add("fa-chevron-left");
-        openBtn.classList.add("hidden");
+        // Abrir a barra lateral
+        barraLateral.classList.remove("w-0", "overflow-hidden");
+        barraLateral.classList.add("w-64", "p-4");
+        // Esconder o botão de abrir e mostrar o de fechar
+        btnAbrir.classList.add("hidden");
+        iconeSeta.classList.remove("fa-chevron-right");
+        iconeSeta.classList.add("fa-chevron-left");
     }
 }
