@@ -1,6 +1,9 @@
 import * as estado from './estado.js';
 
-// nextStep() - grafo-editor.js
+/**
+ * Avança para o próximo passo da animação da busca.
+ */
+// Antigo nextStep() - grafo-editor.js
 export function proximoPasso() {
     if (estado.passoAtualAnimacao < estado.animacaoBusca.length - 1) {
         estado.passoAtualAnimacao++;
@@ -8,7 +11,10 @@ export function proximoPasso() {
     }
 }
 
-// prevStep() - grafo-editor.js
+/**
+ * Retorna para o passo anterior da animação da busca.
+ */
+// Antigo prevStep() - grafo-editor.js
 export function passoAnterior() {
     if (estado.passoAtualAnimacao > 0) {
         estado.passoAtualAnimacao--;
@@ -16,134 +22,135 @@ export function passoAnterior() {
     }
 }
 
-// togglePlay() - grafo-editor.js
-// TEM QUE ALTERAR
+/**
+ * Inicia ou pausa a reprodução automática da animação.
+ */
+// Antigo togglePlay() - grafo-editor.js
 export function alternarReproducao() {
-    const playButton = select('#animation-controls button:nth-child(3)');
+    const btnPlay = select('#animation-controls button:nth-child(3)');
 
-    if (isPlaying) {
-        // Pausar a animação
-        playButton.html('<i class="fas fa-play"></i> Play');
-        clearInterval(playInterval);
-        isPlaying = false;
+    if (estado.reproduzindoAnimacao) {
+        // Pausa a animação
+        btnPlay.html('<i class="fas fa-play"></i> Play');
+        clearInterval(estado.intervaloReproducao);
+        estado.reproduzindoAnimacao = false;
     } else {
-        // Iniciar a animação
-        playButton.html('<i class="fas fa-pause"></i> Pause');
-        isPlaying = true;
+        // Inicia a animação
+        btnPlay.html('<i class="fas fa-pause"></i> Pause');
+        estado.reproduzindoAnimacao = true;
 
         // Se já está no final, volta ao início
-        if (passoAtualAnimacao >= animacaoBusca.length - 1) {
-            passoAtualAnimacao = 0;
+        if (estado.passoAtualAnimacao >= estado.animacaoBusca.length - 1) {
+            estado.passoAtualAnimacao = 0;
         }
 
-        playInterval = setInterval(() => {
-            if (passoAtualAnimacao < animacaoBusca.length - 1) {
-                passoAtualAnimacao++;
-                updateAnimation();
+        // Define o intervalo com base na velocidade atual
+        estado.intervaloReproducao = setInterval(() => {
+            if (estado.passoAtualAnimacao < estado.animacaoBusca.length - 1) {
+                proximoPasso();
             } else {
                 // Chegou ao final, para a animação
-                togglePlay();
+                alternarReproducao();
             }
-        }, animationSpeed);
+        }, estado.velocidadeAnimacao);
     }
 }
 
-// changeAnimationSpeed() - grafo-editor.js
-export function mudarVelocidadeAnimacao() {
-    animationSpeed = parseInt(estado.velocidadeAnimacao);
-    if (estado.passoAtualAnimacao > 0) {
-        // Se está rodando, reinicia com a nova velocidade
+/**
+ * Altera a velocidade da reprodução automática.
+ * @param {string} novaVelocidade - O novo valor de velocidade em milissegundos.
+ */
+// Antigo changeAnimationSpeed() - grafo-editor.js
+export function mudarVelocidadeAnimacao(novaVelocidade) {
+    estado.velocidadeAnimacao = parseInt(novaVelocidade);
+    if (estado.reproduzindoAnimacao) {
+        // Se está rodando a animação, reinicia com a nova velocidade
         alternarReproducao(); // Pausa
-        alternarReproducao(); // Reinicia
+        alternarReproducao(); // Reinicia com nova velocidade
     }
 }
 
-// updateAnimation() - grafo-editor.js
-// TEM QUE ALTERAR
+/**
+ * Atualiza o estado visual do grafo (cores, textos) com base no passo atual da animação.
+ * Esta função é o coração do feedback visual das buscas.
+ */
+// Antigo updateAnimation() - grafo-editor.js
 function atualizarPassoAnimacao() {
-    if (animacaoBusca.length === 0) return;
-
-    const currentStep = animacaoBusca[passoAtualAnimacao];
-
-    // Primeiro, resetamos todas as cores
-    vertices.forEach(v => {
+    // Reseta cores e textos
+    estado.vertices.forEach(v => {
         v.cor = null;
         v.texto = null;
     });
 
-    arestas.forEach(a => {
+    estado.arestas.forEach(a => {
         a.cor = null;
     });
 
-    // Aplicamos as cores do passo atual
-    if (currentStep.visitedVertices) {
-        currentStep.visitedVertices.forEach(vLabel => {
-            const v = vertices.find(vert => vert.label === vLabel);
-            if (v) v.cor = '#60a5fa'; // Azul para visitados
+    // Se não houver passos, não faz nada
+    if (estado.animacaoBusca.length === 0) return;
+
+    const passoAtual = estado.animacaoBusca[estado.passoAtualAnimacao];
+
+    // Pinta os vertices ja visitados de azul e os atuais de laranja
+    if (passoAtual.verticesVisitados) {
+        passoAtual.verticesVisitados.forEach(rotulo => {
+            const v = estado.vertices.find(vert => vert.rotulo === rotulo);
+            if (v) v.cor = '#60a5fa'; // Azul para vertices visitados
         });
     }
 
-    if (currentStep.currentVertices) {
-        currentStep.currentVertices.forEach(vLabel => {
-            const v = vertices.find(vert => vert.label === vLabel);
+    if (passoAtual.verticesAtuais) {
+        passoAtual.verticesAtuais.forEach(rotulo => {
+            const v = estado.vertices.find(vert => vert.rotulo === rotulo);
             if (v) {
-                v.cor = '#f59e0b'; // Laranja para atual
-                v.texto = currentStep.message || '';
+                v.cor = '#f59e0b'; // Laranja para vertices atuais
+                v.texto = passoAtual.mensagem || '';
             }
         });
     }
 
-    if (currentStep.visitedEdges) {
-        currentStep.visitedEdges.forEach(edge => {
-            const a = arestas.find(a =>
-                (a.de.label === edge.from && a.para.label === edge.to) ||
-                (!a.direcionada && a.de.label === edge.to && a.para.label === edge.from)
+    // Pinta as arestas visitadas de azul e a atual de laranja
+    if (passoAtual.arestasVisitadas) {
+        passoAtual.arestasVisitadas.forEach(arestaInfo => {
+            const a = estado.arestas.find(a =>
+                (a.de.rotulo === arestaInfo.de && a.para.rotulo === arestaInfo.para) ||
+                (!a.direcionada && a.de.rotulo === arestaInfo.para && a.para.rotulo === arestaInfo.de)
             );
             if (a) a.cor = '#60a5fa'; // Azul para arestas visitadas
         });
     }
 
-    if (currentStep.currentEdges) {
-        currentStep.currentEdges.forEach(edge => {
-            const a = arestas.find(a =>
-                (a.de.label === edge.from && a.para.label === edge.to) ||
-                (!a.direcionada && a.de.label === edge.to && a.para.label === edge.from)
+    if (passoAtual.arestasAtuais) {
+        passoAtual.arestasAtuais.forEach(arestaInfo => {
+            const a = estado.arestas.find(a =>
+                (a.de.rotulo === arestaInfo.de && a.para.rotulo === arestaInfo.para) ||
+                (!a.direcionada && a.de.rotulo === arestaInfo.para && a.para.rotulo === arestaInfo.de)
             );
-            if (a) a.cor = '#f59e0b'; // Laranja para aresta atual
+            if (a) a.cor = '#f59e0b'; // Laranja para arestas atuais
         });
     }
 
-    if (currentStep.path) {
-        currentStep.path.forEach((vLabel, i) => {
-            const v = vertices.find(vert => vert.label === vLabel);
-            if (v) v.cor = '#10b981'; // Verde para caminho
+    // Destaca o caminho encontrado
+    if (passoAtual.caminho) {
+        for (let i = 0; i < passoAtual.caminho.length; i++) {
+            const rotulo = passoAtual.caminho[i];
+            const v = estado.vertices.find(vert => vert.rotulo === rotulo);
+            if (v) v.cor = '#10b981';
 
             if (i > 0) {
-                const from = currentStep.path[i - 1];
-                const to = vLabel;
-                const a = arestas.find(a =>
-                    (a.de.label === from && a.para.label === to) ||
-                    (!a.direcionada && a.de.label === to && a.para.label === from)
+                const rotuloAnterior = passoAtual.caminho[i - 1];
+                const a = estado.arestas.find(a =>
+                    (a.de.rotulo === rotuloAnterior && a.para.rotulo === rotulo) ||
+                    (!a.direcionada && a.de.rotulo === rotulo && a.para.rotulo === rotuloAnterior)
                 );
-                if (a) a.cor = '#10b981'; // Verde para arestas do caminho
+                if (a) a.cor = '#10b981';
             }
-        });
+        }
     }
 
-    // Atualiza o texto de saída
-    const outputArea = select('#code-output');
-    let outputText = `<strong>${currentStep.message || ''}</strong>`;
-    if (currentStep.details) {
-        outputText += `<div class="mt-2 text-sm text-gray-700">${currentStep.details}</div>`;
-    }
-    outputArea.html(outputText);
-
-    // Destaca a linha de código atual
-    if (currentStep.codeStep) {
-        selectAll('.code-line').forEach(line => {
-            const lineNum = parseInt(line.elt.getAttribute('data-line'));
-            line.style('background-color', lineNum === currentStep.codeStep ? '#fef08a' : 'transparent');
-            line.style('font-weight', lineNum === currentStep.codeStep ? 'bold' : 'normal');
-        });
+    // Atualiza o painel de descrição com a mensagem do passo atual
+    const areaDescricao = document.getElementById('descricao-output');
+    if (areaDescricao) {
+        areaDescricao.textContent = passoAtual.mensagem || '';
     }
 }
