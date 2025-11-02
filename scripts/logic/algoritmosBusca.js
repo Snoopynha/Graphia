@@ -65,7 +65,7 @@ export function buscaEmLargura(arestas, verticeInicio, verticeFim) {
 }
 
 /**
- * Executa a Busca em Profundidade (DFS) iterativa.
+ * Executa a Busca em Profundidade (DFS).
  * Encontra um caminho (não necessariamente o mais curto).
  * @param {Array<object>} arestas - Lista de arestas do grafo (cada aresta deve ter atributos 'de' e 'para', que são rótulos de vértices).
  * @param {object} verticeInicio - Vértice de início da busca.
@@ -302,7 +302,7 @@ class FilaDePrioridade {
     }
     enfileirar(elemento, prioridade) {
         this.elementos.push({ elemento, prioridade });
-        this.elementos.sort((a, b) => a.prioridade - b.prioridade); // Simples, mas ineficiente. OK para este projeto.
+        this.elementos.sort((a, b) => a.prioridade - b.prioridade);
     }
     desenfileirar() {
         return this.elementos.shift();
@@ -314,6 +314,9 @@ class FilaDePrioridade {
 
 /**
  * Retorna uma lista de vértices vizinhos de um vértice.
+ * @param {Array<object>} vertices - Lista de vértices do grafo (cada vértice deve ter um atributo 'rotulo').
+ * @param {Array<object>} arestas - Lista de arestas do grafo (cada aresta deve ter atributos 'de' e 'para', que são rótulos de vértices).
+ * @returns {Array<object>} - Retorna uma array contendo os vizinhos
  */
 function obterVizinhos(vertice, arestas) {
     const vizinhos = [];
@@ -329,6 +332,10 @@ function obterVizinhos(vertice, arestas) {
 
 /**
  * Retorna vizinhos com o custo (peso) da aresta para chegar até eles.
+ * @param {Array<object>} vertices - Lista de vértices do grafo (cada vértice deve ter um atributo 'rotulo').
+ * @param {Array<object>} arestas - Lista de arestas do grafo (cada aresta deve ter atributos 'de' e 'para', que são rótulos de vértices).
+ * @param {number} custosArestas - Peso das arestas do grafo.
+ * @returns {Array<object>} - Retorna uma array contendo os vizinhos e seus respectivos pesos.
  */
 function obterVizinhosComPesos(vertice, arestas, custosArestas) {
     const vizinhos = [];
@@ -352,6 +359,9 @@ function obterVizinhosComPesos(vertice, arestas, custosArestas) {
 
 /**
  * Reconstrói o caminho a partir do mapa de predecessores.
+ * @param {object} predecessores - Mapa de predecessores dos vértices.
+ * @param {string} rotuloFim - Rótulo do vértice de fim.
+ * @returns {Array<string>} - Retorna o caminho reconstruído como uma array de rótulos de vértices.
  */
 function reconstruirCaminho(predecessores, rotuloFim) {
     const caminho = [];
@@ -365,6 +375,9 @@ function reconstruirCaminho(predecessores, rotuloFim) {
 
 /**
  * Calcula a distância em linha reta entre dois vértices (heurística para A*).
+ * @param {object} v1 - Primeiro vértice.
+ * @param {object} v2 - Segundo vértice.
+ * @returns {number} - Retorna a distância euclidiana entre os dois vértices.
  */
 function distanciaEuclidiana(v1, v2) {
     const dx = v1.x - v2.x;
