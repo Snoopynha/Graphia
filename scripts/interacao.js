@@ -1,149 +1,135 @@
 import * as estado from './estado.js';
 
-// tratarClique() - grafo-editor.js
-// TEM QUE ALTERAR
+/**
+ * Função principal que lida com todos os cliques no canvas.
+ * O comportamento muda de acordo com o 'estado.modoAtual'.
+ */
+// Antigo tratarClique() - grafo-editor.js
 export function tratarClique() {
-    if (modoEditor) {
-        const v = obterVerticeClicado(mouseX, mouseY);
+    // Descobre o vértice que foi clicado
+    const verticeClicado = obterVerticeClicado(mouseX, mouseY);
 
-        if (v) {
-            const agora = millis();
+    switch (estado.modoAtual) {
+        case 'adicionarVertice':
+            const entradaNome = document.getElementById('input-nome-vertice');
+            const nome = entradaNome.value.trim() || `V${estado.vertices.length + 1}`;
+            if (!nome) {
+                alert("O nome do vértice não pode ser vazio.");
+                return
+            }
+            if (estado.vertices.some(v => v.rotulo === nome)) {
+                alert("Já existe um vértice com esse nome.");
+                return
+            }
+            // Adiciona um novo vértice na posição do clique
+            estado.vertices.push({ x: mouseX, y: mouseY, rotulo: nome });
 
-            if (agora - ultimaInteracao < 300 && verticeSelecionadoParaEdicao === v) {
-                // Duplo clique → editar
-                if (inputNome) inputNome.remove(); // Limpa qualquer outro input
-
-                const canvasRect = canvas.elt.getBoundingClientRect();
-                const inputX = v.x + canvasRect.left - 50;
-                const inputY = v.y + canvasRect.top - 10;
-
-                inputNome = createInput(v.label);
-                inputNome.position(inputX, inputY);
-                inputNome.size(100);
-                inputNome.class('px-2 py-1 text-sm rounded border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-blue-400');
-                inputNome.elt.focus();
-
-                inputNome.elt.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        const novoTexto = inputNome.value().trim();
-                        if (novoTexto !== '') {
-                            v.label = novoTexto;
-                        }
-                        inputNome.remove();
-                        inputNome = null;
-                    }
-                });
-
+            // Limpa o campo de entrada
+            entradaNome.value = '';
+            entradaNome.focus();
+            break;
+            
+        case 'adicionarArestaDirecionada':
+        case 'adicionarArestaNaoDirecionada':
+            if (!verticeClicado) {
+                // Se não clicou em nenhum vértice, não faz nada
+                if (estado.verticeSelecionado) {
+                    estado.verticeSelecionado.cor = null;
+                    estado.verticeSelecionado = null;
+                }
+                ativarModo('nenhum');
+                estado.modoAtual = 'nenhum';
+                document.getElementById('canvas-container').style.cursor = 'default';
                 return;
             }
 
-            verticeSelecionadoParaEdicao = v;
-            ultimaInteracao = agora;
-
-            // Seleção para mover
-            if (!verticesSelecionados.includes(v)) {
-                verticesSelecionados.push(v);
-                v.cor = '#facc15';
+            if (!estado.verticeSelecionado) {
+                // É o primeiro clique (seleciona o vértice de origem)
+                estado.verticeSelecionado = verticeClicado;
+                estado.verticeSelecionado.cor = '#facc15'; // Marca visualmente
             } else {
-                verticesSelecionados = verticesSelecionados.filter(u => u !== v);
-                delete v.cor;
+                // É o segundo clique (seleciona o vértice de destino e cria a aresta)
+                const ehDirecionada = estado.modoAtual === 'adicionarArestaDirecionada';
+                estado.arestas.push({
+                    de: estado.verticeSelecionado,
+                    para: verticeClicado,
+                    direcionada: ehDirecionada
+                });
+
+                // Limpa a seleção
+                estado.verticeSelecionado.cor = null;
+                estado.verticeSelecionado = null;
+                estado.modoAtual = 'nenhum';
+                ativarModo('nenhum');
+                document.getElementById('canvas-container').style.cursor = 'default';
             }
-
-            offsetArrasto = verticesSelecionados.map(v => ({
-                vx: v,
-                dx: mouseX - v.x,
-                dy: mouseY - v.y
-            }));
-            arrastando = true;
-        } else {
-            // Clicou fora
-            verticesSelecionados.forEach(v => delete v.cor);
-            verticesSelecionados = [];
-            verticeSelecionadoParaEdicao = null;
-        }
-
-        return;
-    }
-
-    if (modoAdicionarVertice) {
-        if (inputNome) inputNome.remove();
-
-        const canvasRect = canvas.elt.getBoundingClientRect();
-        const inputX = mouseX + canvasRect.left;
-        const inputY = mouseY + canvasRect.top;
-
-        inputNome = createInput('');
-        inputNome.position(inputX, inputY);
-        inputNome.size(100);
-        inputNome.class('px-2 py-1 text-sm rounded border border-gray-300 shadow focus:outline-none focus:ring-2 focus:ring-blue-400');
-        inputNome.elt.focus();
-
-        inputNome.elt.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const nome = inputNome.value().trim();
-                if (nome !== '') {
-                    vertices.push({ x: mouseX, y: mouseY, label: nome });
+            break;
+            
+        case 'editar':
+            if (verticeClicado) {
+                if (keyIsDown(SHIFT)) {
+                    // Adiciona ou remove da seleção
+                    const indice = estado.verticesSelecionados.indexOf(verticeClicado);
+                    if (indice > -1) {
+                        // Já estava selecionado, então remove (toggle)
+                        estado.verticesSelecionados.splice(indice, 1);
+                        verticeClicado.cor = null;
+                    } else {
+                        // Não estava selecionado, então adiciona
+                        estado.verticesSelecionados.push(verticeClicado);
+                        verticeClicado.cor = '#facc15';
+                    }
+                } else {
+                    // Seleciona apenas o clicado
+                    estado.verticesSelecionados.forEach(v => v.cor = null);
+                    // Define a seleção como sendo APENAS o vértice clicado
+                    estado.verticesSelecionados = [verticeClicado];
+                    verticeClicado.cor = '#facc15';
                 }
-                inputNome.remove();
-                inputNome = null;
-                modoAdicionarVertice = false;
-            }
-        });
 
-        return; // Impede que a lógica de aresta rode ao adicionar vértice
-    }
-
-    if (modoAdicionarAresta) {
-        const v = obterVerticeClicado(mouseX, mouseY);
-        if (!v) return;
-
-        if (!verticeSelecionado) {
-            verticeSelecionado = v;
-        } else {
-            arestas.push({
-                de: verticeSelecionado,
-                para: v,
-                direcionada: !arestaNDirecionada
-            });
-            verticeSelecionado = null;
-            modoAdicionarAresta = false;
-        }
-    }
-
-    if (modoMover) {
-        const v = obterVerticeClicado(mouseX, mouseY);
-
-        if (v) {
-            if (!verticesSelecionados.includes(v)) {
-                verticesSelecionados.push(v);
-                v.cor = '#facc15';
+                // Prepara para o arrasto de TODOS os vértices selecionados
+                estado.arrastando = true;
+                estado.deslocamentoArrasto = estado.verticesSelecionados.map(v => ({
+                    vx: v,
+                    dx: mouseX - v.x,
+                    dy: mouseY - v.y
+                }));
             } else {
-                verticesSelecionados = verticesSelecionados.filter(u => u !== v);
-                delete v.cor;
+                // Clicou fora de qualquer vértice, limpa todas as seleções
+                estado.verticesSelecionados.forEach(v => v.cor = null);
+                estado.verticesSelecionados = [];
+                estado.arrastando = false;
             }
+            break;
 
-            offsetArrasto = verticesSelecionados.map(v => ({
-                vx: v,
-                dx: mouseX - v.x,
-                dy: mouseY - v.y
-            }));
-
-            arrastando = true;
-        }
-    } else {
-        verticesSelecionados.forEach(v => delete v.cor);
-        verticesSelecionados = [];
-        modoMover = false;
-        arrastando = false;
+        default:
+            // Limpa seleções se clicar fora de vértices
+            if (!verticeClicado) {
+                estado.verticesSelecionados.forEach(v => v.cor = null);
+                estado.verticesSelecionados = [];
+                if (estado.verticeSelecionado) {
+                    estado.verticeSelecionado.cor = null;
+                    estado.verticeSelecionado = null;
+                }
+            }
+            break;
     }
-
-    return;
 }
 
+/**
+ * Chamada quando o botão do mouse é solto.
+ * Interrompe qualquer arrasto em andamento.
+ */
+// Antiga mouseReleased() - grafo-editor.js
 export function mouseSolto() {
     estado.arrastando = false;
+    estado.deslocamentoArrasto = [];
 }
 
+/**
+ * Chamada enquando o mouse é arrastado.
+ * Atualiza a posição dos vértices sendo arrastados.
+ */
 // Antiga mouseDragged() - grafo-editor.js
 export function mouseArrastado() {
     if (estado.modoAtual === 'editar' && estado.arrastando) {
@@ -154,32 +140,47 @@ export function mouseArrastado() {
     }
 }
 
+/**
+ * Chamada quando uma tecla é pressionada.
+ * Permite deletar vértices selecionados com DELETE ou BACKSPACE.
+ */
 // Antiga keyPressed() - grafo-editor.js
 export function teclaPressionada() {
     if (estado.modoAtual === 'editar' && (keyCode === DELETE || keyCode === BACKSPACE)) {
         if (estado.verticesSelecionados.length > 0) {
-            // Remove vértices selecionados
-            estado.verticesSelecionados.forEach(v => {
-                const index = estado.vertices.indexOf(v);
-                if (index !== -1) estado.vertices.splice(index, 1);
 
-                // Remove arestas ligadas a ele
-                for (let i = estado.arestas.length - 1; i >= 0; i--) {
-                    if (estado.arestas[i].de === v || estado.arestas[i].para === v) {
-                        estado.arestas.splice(i, 1);
-                    }
-                }
-            });
+            // Remove as arestas conectadas aos vértices selecionados
+            estado.arestas = estado.arestas.filter(a =>
+                !estado.verticesSelecionados.includes(a.de) &&
+                !estado.verticesSelecionados.includes(a.para)
+            );
 
+            // Remove os vértices selecionados
+            estado.vertices = estado.vertices.filter(v =>
+                !estado.verticesSelecionados.includes(v)
+            );
+
+            // Limpa a seleção
             estado.verticesSelecionados = [];
         }
     }
 }
 
+/**
+ * Função auxiliar para encontrar o vértice clicado.
+ * @param {*} mx - coordenada x do clique
+ * @param {*} my - coordenada y do clique
+ * @returns {object|null} - o vértice clicado ou null se nenhum foi clicado
+ */
 // obterVerticeClicado() - grafo-editor.js
 function obterVerticeClicado(mx, my) {
-    for (let v of estado.vertices) {
-        if (dist(mx, my, v.x, v.y) <= 35) return v;
+    // Verifica do último ao primeiro para priorizar vértices desenhados por cima
+    for (let i = estado.vertices.length - 1; i >= 0; i--) {
+        const v = estado.vertices[i];
+        // Calcula a distância do clique até o vértice
+        const distancia = dist(mx, my, v.x, v.y);
+        // Se estiver dentro do raio de clique (35 pixels), retorna o vértice
+        if (distancia <= 35) return v;
     }
 
     return null;
