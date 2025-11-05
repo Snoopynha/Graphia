@@ -177,19 +177,19 @@ function criarModalSelecaoVertices(algoritmo) {
         try {
             switch (algoritmo) {
                 case 'bfs':
-                    resultado = buscaEmLargura(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
+                    resultado = buscaEmLargura(estado.arestas, verticeInicial, verticeFinal);
                     break;
 
                 case 'dfs':
-                    resultado = buscaEmProfundidade(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
+                    resultado = buscaEmProfundidade(estado.arestas, verticeInicial, verticeFinal);
                     break;
 
                 case 'dijkstra':
-                    resultado = dijkstra(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
+                    resultado = dijkstra(estado.vertices, estado.arestas, verticeInicial, verticeFinal, estado.custosArestas);
                     break;
 
                 case 'aEstrela':
-                    resultado = buscaAEstrela(estado.vertices, estado.arestas, verticeInicial, verticeFinal);
+                    resultado = buscaAEstrela(estado.vertices, estado.arestas, verticeInicial, verticeFinal, estado.custosArestas);
                     break;
 
                 default:
