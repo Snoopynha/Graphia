@@ -4,9 +4,9 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grafia/Graphia - Versão Modular</title>
+    <title>Graphia - Versão Modular</title>
     <meta name="description"
-        content="Simulador de grafo que demonstra as formas que eles podem ser armazenados em um computador.">
+        content="Simulador de grafo que demonstra as formas deles serem armazenados no computador e suas principais buscas.">
     <meta name="author" content="Camilly Vitória Barbosa">
     <link rel="stylesheet" href="styles/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -82,31 +82,47 @@
             <div id="canvas-container" class="flex-1 relative w-full h-full"></div>
         </main>
 
-        <aside class="w-72 bg-white border-l border-gray-300 p-4 text-sm overflow-y-auto">
-            <div id="animation-controls" class="mt-4">
-                <button onclick="passoAnterior()" class="px-3 py-1 bg-gray-200 rounded">
-                    <i class="fas fa-step-backward"></i> Anterior
-                </button>
-                <button onclick="proximoPasso()" class="px-3 py-1 bg-blue-500 text-white rounded">
-                    <i class="fas fa-step-forward"></i> Próximo
-                </button>
-                <button onclick="alternarReproducao()" class="px-3 py-1 bg-green-500 text-white rounded">
-                    <i class="fas fa-play"></i> Play
-                </button>
-                <select onchange="mudarVelocidadeAnimacao(this.value)" class="ml-2 p-1 border rounded">
-                    <option value="2000">Lento</option>
-                    <option value="1000" selected>Normal</option>
-                    <option value="500">Rápido</option>
-                    <option value="200">Muito rápido</option>
-                </select>
+        <aside
+            class="w-72 bg-white border-l border-gray-300 p-4 text-sm flex flex-col overflow-y-auto max-h-[calc(100vh-4rem)]">
+            <div id="animation-controls" class="mt-4 mb-4">
+                <div class="flex space-x-2 mb-3">
+                    <button onclick="passoAnterior()" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                        <i class="fas fa-step-backward"></i> Anterior
+                    </button>
+                    <button onclick="alternarReproducao()"
+                        class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                        <i class="fas fa-play"></i> Play
+                    </button>
+                    <button onclick="proximoPasso()" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        <i class="fas fa-step-forward"></i> Próximo
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-2 mb-2">
+                    <label for="velocidade" class="text-gray-700 text-xs font-semibold">Velocidade:</label>
+                    <select id="velocidade" onchange="mudarVelocidadeAnimacao(this.value)"
+                        class="p-1 border rounded text-sm flex-1">
+                        <option value="2000">Lento</option>
+                        <option value="1000" selected>Normal</option>
+                        <option value="500">Rápido</option>
+                        <option value="200">Muito rápido</option>
+                    </select>
+                </div>
             </div>
+
             <h2 class="font-semibold mb-2 mt-4">Descrição</h2>
-            <p id="descricao-output" class="text-gray-700 mb-3">Selecione uma forma de visualização para ver a
-                explicação aqui.</p>
+            <p id="descricao-output" class="text-gray-700 mb-4">
+                Selecione uma forma de visualização para ver a explicação aqui.
+            </p>
+
             <h2 class="font-semibold mb-2">Código Gerado</h2>
             <pre id="code-output"
-                class="bg-gray-100 p-2 rounded overflow-auto h-full text-xs">Selecione uma forma de visualização para ver o código correspondente aqui.</pre>
+                class="bg-gray-100 p-2 rounded overflow-auto flex-1 text-xs whitespace-pre-wrap break-words leading-relaxed mb-6">
+Selecione uma forma de visualização para ver o código correspondente aqui.
+    </pre>
         </aside>
+
+
     </div>
 
     <script type="module" src="scripts/main.js"></script>
