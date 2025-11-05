@@ -1,25 +1,24 @@
 import { inicializarCanvas, desenharGrafo } from './renderizador.js';
-import { tratarClique, mouseArrastado, teclaPressionada } from './interacao.js';
-import * as uiController from './uiController.js';
+import { tratarClique, mouseArrastado, mouseSolto, teclaPressionada } from './interacao.js';
+import * as ui from './uiController.js';
 import * as animacao from './animacao.js';
 
-// Conecta as funções do p5.js ao nosso código modular
+// --- Conecta o p5.js ---
 window.setup = inicializarCanvas;
 window.draw = desenharGrafo;
 window.mousePressed = tratarClique;
 window.mouseDragged = mouseArrastado;
+window.mouseReleased = mouseSolto;
 window.keyPressed = teclaPressionada;
 
-// Expõe as funções de UI e Animação para serem chamadas pelo HTML (onclick, onchange)
-window.mostrarRepresentacao = uiController.mostrarRepresentacao;
-window.ativarModoAdicionarVertice = uiController.ativarModoAdicionarVertice;
-window.ativarModoAdicionarArestaDirecionada = uiController.ativarModoAdicionarArestaDirecionada;
-window.ativarModoAdicionarArestaNDirecionada = uiController.ativarModoAdicionarArestaNDirecionada;
-window.ativarModoEditor = uiController.ativarModoEditor;
-window.limparCores = uiController.limparCores;
-window.executarBusca = uiController.executarBusca;
-window.toggleSidebar = uiController.toggleSidebar;
+// --- Conecta o HTML (botões) ao uiController ---
+window.mostrarRepresentacao = ui.mostrarRepresentacao;
+window.ativarModo = ui.ativarModo;
+window.limparCores = ui.limparCores;
+window.executarBusca = ui.executarBusca;
+window.alternarBarraLateral = ui.alternarBarraLateral;
 
+// --- Conecta o HTML (botões) ao animacao ---
 window.proximoPasso = animacao.proximoPasso;
 window.passoAnterior = animacao.passoAnterior;
 window.alternarReproducao = animacao.alternarReproducao;
