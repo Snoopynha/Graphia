@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafia/Graphia - Versão Modular</title>
+    <meta name="description"
+        content="Simulador de grafo que demonstra as formas que eles podem ser armazenados em um computador.">
+    <meta name="author" content="Camilly Vitória Barbosa">
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+
+<body class="bg-[#d4d4d4] text-gray-800">
+    <nav class="flex items-center justify-between h-16 px-6 bg-white shadow-md">
+        <img src="logo.png" alt="Logo" class="h-8">
+        <div class="flex items-center space-x-6 text-2xl text-gray-700">
+            <i class="fas fa-file-alt hover:text-blue-600 cursor-pointer transition-colors duration-200"></i>
+            <i class="fas fa-bell hover:text-blue-600 cursor-pointer transition-colors duration-200"></i>
+        </div>
+    </nav>
+    <div class="flex h-[calc(100vh-4rem)] relative">
+        <aside id="sidebar"
+            class="w-64 bg-[#f5f5f5] border-gray-300 p-4 transition-all duration-300 z-10 shadow-sm overflow-hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semiblod text-lg">Formas de Representação</h2>
+                <button onclick="alternarBarraLateral()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-chevron-left" id="toggle-icon"></i>
+                </button>
+            </div>
+            <ul class="space-y-2 text-sm">
+                <li><button onclick="mostrarRepresentacao('lista')"
+                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Lista de
+                        Adjacência</button></li>
+                <li><button onclick="mostrarRepresentacao('matrizAdj')"
+                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Matriz de
+                        Adjacência</button></li>
+                <li><button onclick="mostrarRepresentacao('matrizInc')"
+                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Matriz de
+                        Incidência</button></li>
+            </ul>
+            <div class="flex justify-between items-center mb-4 mt-4">
+                <h2 class="font-semiblod text-lg">Formas de Busca</h2>
+            </div>
+            <ul class="space-y-2 text-sm">
+                <li><button onclick="executarBusca('bfs')"
+                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Busca em Largura
+                        (BFS)</button></li>
+                <li><button onclick="executarBusca('dfs')"
+                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Busca em Profundidade
+                        (DFS)</button></li>
+                <li><button onclick="executarBusca('dijkstra')"
+                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Dijkstra</button></li>
+                <li><button onclick="executarBusca('aEstrela')"
+                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">A*
+                        (A-Estrela)</button></li>
+            </ul>
+        </aside>
+        <button id="open-sidebar" onclick="alternarBarraLateral()"
+            class="hidden absolute left-0 top-4 bg-white border border-gray-300 rounded-r px-2 py-1 shadow z-20">
+            <i class="fas fa-chevron-right text-gray-700"></i>
+        </button>
+
+        <main class="flex-1 flex flex-col bg-white relative">
+            <div class="h-12 bg-gray-100 border-b border-gray-300 flex items-center px-4 space-x-4 text-sm">
+                <input type="text" id="input-nome-vertice" placeholder="Nome do Vértice"
+                    class="px-2 py-1 border rounded">
+                <button onclick="ativarModo('adicionarVertice')"
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Adicionar Vértice</button>
+                <button onclick="ativarModo('adicionarArestaDirecionada')"
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Aresta Direcionada</button>
+                <button onclick="ativarModo('adicionarArestaNaoDirecionada')"
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Aresta Não Direcionada</button>
+                <button id="botaoEditar" onclick="ativarModo('editar')"
+                    class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-800">Editar</button>
+                <button onclick="limparCores()" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Limpar
+                    Cores</button>
+            </div>
+            <div id="canvas-container" class="flex-1 relative w-full h-full"></div>
+        </main>
+
+        <aside class="w-72 bg-white border-l border-gray-300 p-4 text-sm overflow-y-auto">
+            <div id="animation-controls" class="mt-4">
+                <button onclick="passoAnterior()" class="px-3 py-1 bg-gray-200 rounded">
+                    <i class="fas fa-step-backward"></i> Anterior
+                </button>
+                <button onclick="proximoPasso()" class="px-3 py-1 bg-blue-500 text-white rounded">
+                    <i class="fas fa-step-forward"></i> Próximo
+                </button>
+                <button onclick="alternarReproducao()" class="px-3 py-1 bg-green-500 text-white rounded">
+                    <i class="fas fa-play"></i> Play
+                </button>
+                <select onchange="mudarVelocidadeAnimacao(this.value)" class="ml-2 p-1 border rounded">
+                    <option value="2000">Lento</option>
+                    <option value="1000" selected>Normal</option>
+                    <option value="500">Rápido</option>
+                    <option value="200">Muito rápido</option>
+                </select>
+            </div>
+            <h2 class="font-semibold mb-2 mt-4">Descrição</h2>
+            <p id="descricao-output" class="text-gray-700 mb-3">Selecione uma forma de visualização para ver a
+                explicação aqui.</p>
+            <h2 class="font-semibold mb-2">Código Gerado</h2>
+            <pre id="code-output"
+                class="bg-gray-100 p-2 rounded overflow-auto h-full text-xs">Selecione uma forma de visualização para ver o código correspondente aqui.</pre>
+        </aside>
+    </div>
+
+    <script type="module" src="scripts/main.js"></script>
+</body>
+
+</html>
