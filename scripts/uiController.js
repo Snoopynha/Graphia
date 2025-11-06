@@ -1,5 +1,5 @@
 import * as estado from './estado.js'; // Importa todas as variáveis de estado
-import { gerarListaAdjacencia, gerarMatrizAdjacencia, gerarMatrizIncidencia } from './logic/representacoesGrafo.js';
+import { gerarListaAdjacencia, gerarMatrizAdjacencia, gerarMatrizIncidencia } from './logic/representacoesGrafos.js';
 import { buscaEmLargura, buscaEmProfundidade, dijkstra, buscaAEstrela } from './logic/algoritmosBusca.js';
 import { atualizarPassoAnimacao } from './animacao.js';
 

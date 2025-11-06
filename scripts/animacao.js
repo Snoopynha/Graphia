@@ -75,7 +75,7 @@ export function mudarVelocidadeAnimacao(novaVelocidade) {
  * Esta função é o coração do feedback visual das buscas.
  */
 // Antigo updateAnimation() - grafo-editor.js
-function atualizarPassoAnimacao() {
+export function atualizarPassoAnimacao() {
     // Reseta cores e textos
     estado.vertices.forEach(v => {
         v.cor = null;
