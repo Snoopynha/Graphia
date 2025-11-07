@@ -107,7 +107,7 @@ export function executarBusca(algoritmo) {
 // Antigo criarModalSelecaoVertices(algoritmo) - grafo-buscas.js
 function criarModalSelecaoVertices(algoritmo) {
     // Remove modal existente, se houver
-    const modalExistente = document.cre('.modal-busca');
+    const modalExistente = document.querySelector('.modal-busca');
     if (modalExistente) modalExistente.remove();
 
     // Cria os elementos do modal
