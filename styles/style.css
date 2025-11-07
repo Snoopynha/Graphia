@@ -1,0 +1,5 @@
+#code-output {
+  white-space: pre; /* Impede que o navegador quebre as linhas automaticamente */
+  overflow-x: auto; /* Adiciona uma barra de rolagem horizontal se o conteúdo transbordar */
+  word-wrap: normal; /* Garante que palavras longas não sejam quebradas */
+}
