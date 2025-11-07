@@ -1,4 +1,4 @@
-import * as estado from './estado.js';
+import estado from './estado.js';
 
 /**
  * Avança para o próximo passo da animação da busca.

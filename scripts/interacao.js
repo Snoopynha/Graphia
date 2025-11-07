@@ -1,4 +1,4 @@
-import * as estado from './estado.js';
+import estado from './estado.js';
 
 /**
  * Função principal que lida com todos os cliques no canvas.
