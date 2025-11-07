@@ -6,6 +6,11 @@ import estado from './estado.js';
  */
 // Antigo tratarClique() - grafo-editor.js
 export function tratarClique() {
+    // Impede de ser adicionado algo fora dos limites do canvas
+    if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) {
+        return; 
+    }
+
     // Descobre o vértice que foi clicado
     const verticeClicado = obterVerticeClicado(mouseX, mouseY);
 
