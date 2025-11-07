@@ -27,29 +27,41 @@ export function passoAnterior() {
  */
 // Antigo togglePlay() - grafo-editor.js
 export function alternarReproducao() {
-    const btnPlay = select('#animation-controls button:nth-child(3)');
+    const btnPlay = document.querySelector('#animation-controls button:nth-child(3)');
+    const btnAnterior = document.querySelector('#animation-controls button:nth-child(1)');
+    const btnProximo = document.querySelector('#animation-controls button:nth-child(2)');
 
+    // Se está no meio de uma reprodução
     if (estado.reproduzindoAnimacao) {
-        // Pausa a animação
-        btnPlay.html('<i class="fas fa-play"></i> Play');
+        // Para o looping
         clearInterval(estado.intervaloReproducao);
         estado.reproduzindoAnimacao = false;
+
+        // Atualiza a UI
+        btnPlay.innerHTML = '<i class="fas fa-play"></i> Play';
+        // Reabilita os botões
+        btnAnterior.disabled = false;
+        btnProximo.disabled = false;
     } else {
-        // Inicia a animação
-        btnPlay.html('<i class="fas fa-pause"></i> Pause');
+        // Começa a animação
         estado.reproduzindoAnimacao = true;
 
-        // Se já está no final, volta ao início
+        // Se a animação já terminou, reinicia do começo
         if (estado.passoAtualAnimacao >= estado.animacaoBusca.length - 1) {
             estado.passoAtualAnimacao = 0;
+            atualizarPassoAnimacao();
         }
 
-        // Define o intervalo com base na velocidade atual
+        // Atualiza a UI
+        btnPlay.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        btnAnterior.disabled = true;
+        btnProximo.disabled = true;
+
+        // Cria o loop que avança os passos
         estado.intervaloReproducao = setInterval(() => {
             if (estado.passoAtualAnimacao < estado.animacaoBusca.length - 1) {
                 proximoPasso();
             } else {
-                // Chegou ao final, para a animação
                 alternarReproducao();
             }
         }, estado.velocidadeAnimacao);
