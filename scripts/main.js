@@ -14,6 +14,7 @@ window.keyPressed = teclaPressionada;
 // --- Conecta o HTML (botões) ao uiController ---
 window.mostrarRepresentacao = ui.mostrarRepresentacao;
 window.ativarModo = ui.ativarModo;
+window.alternarModoEditar = ui.alternarModoEditar;
 window.limparCores = ui.limparCores;
 window.executarBusca = ui.executarBusca;
 window.alternarBarraLateral = ui.alternarBarraLateral;

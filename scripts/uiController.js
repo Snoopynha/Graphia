@@ -55,6 +55,37 @@ export function ativarModo(novoModo) {
     } else { // 'remover' ou 'nenhum'
         canvasContainer.style.cursor = 'default';
     }
+
+    // Se ativarmos outro modo, garanta que o botão "Editar" volte ao normal.
+    const botaoEditar = document.getElementById('botaoEditar');
+    botaoEditar.textContent = 'Editar';
+    botaoEditar.classList.remove('bg-yellow-500', 'text-black'); // Remove cores de "ativo"
+    botaoEditar.classList.add('bg-gray-500', 'text-white'); // Adiciona cores de "inativo"
+    document.getElementById('canvas-container').style.backgroundColor = '#ffffff'; // Reseta cor do canvas
+}
+
+/**
+ * Altera especificamente o modo de edição do canvas.
+ */
+export function alternarModoEditar() {
+    const botaoEditar = document.getElementById('botaoEditar');
+    const canvasContainer = document.getElementById('canvas-container');
+
+    if (estado.modoAtual === 'editar') {
+        // Estava no modo Editar, agora vamos SAIR
+        estado.modoAtual = 'nenhum';
+        botaoEditar.textContent = 'Editar';
+        botaoEditar.classList.remove('bg-yellow-500', 'text-black');
+        botaoEditar.classList.add('bg-gray-500', 'text-white');
+        canvasContainer.style.backgroundColor = '#ffffff';
+    } else {
+        // Estava em outro modo, agora vamos ENTRAR no modo Editar
+        estado.modoAtual = 'editar';
+        botaoEditar.textContent = 'Sair da Edição';
+        botaoEditar.classList.remove('bg-gray-500', 'text-white');
+        botaoEditar.classList.add('bg-yellow-500', 'text-black');
+        canvasContainer.style.backgroundColor = '#fafafa';
+    }
 }
 
 /**
