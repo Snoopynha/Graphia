@@ -1,17 +1,22 @@
-export let vertices = [];
-export let arestas = [];
-export let custosArestas = {};
+// Objeto que constrói as variáveis
+const estadoGlobal = {
+    vertices: [],
+    arestas: [],
+    custosArestas: {},
 
-// Estado de Interação
-export let modoAtual = 'nenhum'; // 'adicionarVertice', 'adicionarAresta', 'adicionarArestaNaoDirecionada, 'editar'
-export let verticeSelecionado = null;
-export let verticesSelecionados = [];
-export let arrastando = false;
-export let deslocamentoArrasto = [];
+    // Estado de Interação
+    modoAtual: 'nenhum', // 'adicionarVertice', 'adicionarAresta', 'adicionarArestaNaoDirecionada, 'editar'
+    verticeSelecionado: null,
+    verticesSelecionados: [],
+    arrastando: false,
+    deslocamentoArrasto: [],
 
-// Estado da Animação
-export let animacaoBusca = [];
-export let passoAtualAnimacao = 0;
-export let reproduzindoAnimacao = false;
-export let intervaloReproducao = null;
-export let velocidadeAnimacao = 1000;
+    // Estado da Animação
+    animacaoBusca: [],
+    passoAtualAnimacao: 0,
+    reproduzindoAnimacao: false,
+    intervaloReproducao: null,
+    velocidadeAnimacao: 1000
+};
+
+export default estadoGlobal;
