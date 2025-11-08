@@ -27,44 +27,10 @@ export function passoAnterior() {
  */
 // Antigo togglePlay() - grafo-editor.js
 export function alternarReproducao() {
-    const btnPlay = document.querySelector('#animation-controls button:nth-child(3)');
-    const btnAnterior = document.querySelector('#animation-controls button:nth-child(1)');
-    const btnProximo = document.querySelector('#animation-controls button:nth-child(2)');
-
-    // Se está no meio de uma reprodução
     if (estado.reproduzindoAnimacao) {
-        // Para o looping
-        clearInterval(estado.intervaloReproducao);
-        estado.reproduzindoAnimacao = false;
-
-        // Atualiza a UI
-        btnPlay.innerHTML = '<i class="fas fa-play"></i> Play';
-        // Reabilita os botões
-        btnAnterior.disabled = false;
-        btnProximo.disabled = false;
+        pararLoopAnimacao();
     } else {
-        // Começa a animação
-        estado.reproduzindoAnimacao = true;
-
-        // Se a animação já terminou, reinicia do começo
-        if (estado.passoAtualAnimacao >= estado.animacaoBusca.length - 1) {
-            estado.passoAtualAnimacao = 0;
-            atualizarPassoAnimacao();
-        }
-
-        // Atualiza a UI
-        btnPlay.innerHTML = '<i class="fas fa-pause"></i> Pause';
-        btnAnterior.disabled = true;
-        btnProximo.disabled = true;
-
-        // Cria o loop que avança os passos
-        estado.intervaloReproducao = setInterval(() => {
-            if (estado.passoAtualAnimacao < estado.animacaoBusca.length - 1) {
-                proximoPasso();
-            } else {
-                alternarReproducao();
-            }
-        }, estado.velocidadeAnimacao);
+        iniciarLoopAnimacao();
     }
 }
 
@@ -77,8 +43,74 @@ export function mudarVelocidadeAnimacao(novaVelocidade) {
     estado.velocidadeAnimacao = parseInt(novaVelocidade);
     if (estado.reproduzindoAnimacao) {
         // Se está rodando a animação, reinicia com a nova velocidade
-        alternarReproducao(); // Pausa
-        alternarReproducao(); // Reinicia com nova velocidade
+        pararLoopAnimacao();
+        iniciarLoopAnimacao();
+    }
+}
+
+// --- FUNÇÕES AUXILIARES (INTERNAS DO MÓDULO) ---
+
+/**
+ * Lógica centralizada para INICIAR o loop do setInterval.
+ */
+function iniciarLoopAnimacao() {
+    // Para qualquer possível looping que poderia estar aberto
+    pararLoopAnimacao(true);
+
+    estado.reproduzindoAnimacao = true;
+    atualizarBotoes(true); // Atualiza a UI para o modo "Reproduzindo"
+
+    // Se a animação já terminou, reinicia do começo
+    if (estado.passoAtualAnimacao >= estado.animacaoBusca.length - 1) {
+        estado.passoAtualAnimacao = 0;
+        atualizarPassoAnimacao();
+    }
+
+    // Cria o novo loop
+    estado.intervaloReproducao = setInterval(() => {
+        if (estado.passoAtualAnimacao < estado.animacaoBusca.length - 1) {
+            proximoPasso();
+        } else {
+            // Para automaticamente ao chegar no final
+            pararLoopAnimacao();
+        }
+    }, estado.velocidadeAnimacao);
+}
+
+/**
+ * Lógica centralizada para PARAR o loop do setInterval.
+ * @param {boolean} [apenasLimpar=false] - Se true, só limpa o intervalo, sem mudar a UI.
+ */
+function pararLoopAnimacao(apenasLimpar = false) {
+    clearInterval(estado.intervaloReproducao);
+    estado.intervaloReproducao = null;
+
+    if (apenasLimpar) return;
+
+    estado.reproduzindoAnimacao = false;
+    // Atualiza a UI para o modo "Pausado"
+    atualizarBotoes(false);
+}
+
+/**
+ * Atualiza a UI dos botões de controle (desabilita/habilita e troca o texto).
+ * @param {boolean} estaReproduzindo - O estado atual da animação.
+ */
+function atualizarBotoes(estaReproduzindo) {
+    const btnPlay = select('#animation-controls button:nth-child(3)');
+    const btnAnterior = select('#animation-controls button:nth-child(1)');
+    const btnProximo = select('#animation-controls button:nth-child(2)');
+
+    if (!btnPlay || !btnAnterior || !btnProximo) return;
+
+    if (estaReproduzindo) {
+        btnPlay.innerHTML = '<i class="fas fa-pause"></i> Pause';
+        btnAnterior.disabled = true;
+        btnProximo.disabled = true;
+    } else {
+        btnPlay.innerHTML = '<i class="fas fa-play"></i> Play';
+        btnAnterior.disabled = false;
+        btnProximo.disabled = false;
     }
 }
 
