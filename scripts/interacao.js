@@ -16,22 +16,17 @@ export function tratarClique() {
 
     switch (estado.modoAtual) {
         case 'adicionarVertice':
-            const entradaNome = document.getElementById('input-nome-vertice');
-            const nome = entradaNome.value.trim() || `V${estado.vertices.length + 1}`;
-            if (!nome) {
-                alert("O nome do vértice não pode ser vazio.");
-                return
-            }
-            if (estado.vertices.some(v => v.rotulo === nome)) {
-                alert("Já existe um vértice com esse nome.");
-                return
-            }
-            // Adiciona um novo vértice na posição do clique
-            estado.vertices.push({ x: mouseX, y: mouseY, rotulo: nome });
+            let contador = 1;
+            let novoNome = `V${contador}`;
 
-            // Limpa o campo de entrada
-            entradaNome.value = '';
-            entradaNome.focus();
+            // Verifica se V1, V2... já existem para não repetir
+            while (estado.vertices.some(v => v.rotulo === novoNome)) {
+                contador++;
+                novoNome = `V${contador}`;
+            }
+
+            // Adiciona um novo vértice na posição do clique
+            estado.vertices.push({ x: mouseX, y: mouseY, rotulo: novoNome });
             break;
             
         case 'adicionarArestaDirecionada':
