@@ -12,94 +12,153 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #DAC2FF; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bfaee3; 
+        }
+    </style>
 </head>
 
-<body class="bg-[#d4d4d4] text-gray-800">
-    <nav class="flex items-center justify-between h-16 px-6 bg-white shadow-md">
-        <img src="logo.png" alt="Logo" class="h-8">
+<body class="bg-slate-50 text-slate-700 font-sans selection:bg-[#DAC2FF] selection:text-white">
+    <nav class="flex items-center justify-between h-16 px-8 bg-white shadow-lg sticky top-0 z-50">
+        <img src="assets/GRAPHIA.png" alt="Logo" class="h-20">
         <div class="flex items-center space-x-6 text-2xl text-gray-700">
-            <i class="fas fa-file-alt hover:text-blue-600 cursor-pointer transition-colors duration-200"></i>
-            <i class="fas fa-bell hover:text-blue-600 cursor-pointer transition-colors duration-200"></i>
+            <i class="fas fa-file-alt hover:text-[#d4d4d4] cursor-pointer transition-colors duration-200 drop-shadow-sm"></i>
+            <i class="fa-solid fa-inbox hover:text-[#d4d4d4] cursor-pointer transition-colors duration-200 drop-shadow-sm"></i>
         </div>
     </nav>
-    <div class="flex h-[calc(100vh-4rem)] relative">
+
+    <div class="flex h-[calc(100vh-4rem)] relative p-4 gap-4">
         <aside id="sidebar"
-            class="w-64 bg-[#f5f5f5] border-gray-300 p-4 transition-all duration-300 z-10 shadow-sm overflow-hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-semiblod text-lg">Formas de Representação</h2>
-                <button onclick="alternarBarraLateral()" class="text-gray-500 hover:text-gray-700">
+            class="w-72 bg-[#B5D7F2] rounded-2xl p-5 transition-all duration-300 z-10 shadow-xl overflow-hidden flex flex-col border border-white/40">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-bold text-lg text-slate-800 tracking-wide">Representação</h2>
+                <button onclick="alternarBarraLateral()" class="text-slate-600 hover:text-white transition-colors bg-white/30 hover:bg-white/50 rounded-full w-8 h-8 flex items-center justify-center">
                     <i class="fas fa-chevron-left" id="toggle-icon"></i>
                 </button>
             </div>
-            <ul class="space-y-2 text-sm">
-                <li><button onclick="mostrarRepresentacao('lista')"
-                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Lista de
-                        Adjacência</button></li>
-                <li><button onclick="mostrarRepresentacao('matrizAdj')"
-                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Matriz de
-                        Adjacência</button></li>
-                <li><button onclick="mostrarRepresentacao('matrizInc')"
-                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Matriz de
-                        Incidência</button></li>
+            <ul class="space-y-3 text-sm font-medium">
+                <li>
+                    <button onclick="mostrarRepresentacao('lista')"
+                        class="w-full text-left px-4 py-3 bg-white/40 hover:bg-white hover:text-[#B5D7F2] hover:shadow-md rounded-xl transition-all duration-200 flex items-center">
+                        <i class="fas fa-list-ul mr-3 opacity-70"></i>Lista de Adjacência
+                    </button>
+                </li>
+                <li>
+                    <button onclick="mostrarRepresentacao('matrizAdj')"
+                        class="w-full text-left px-4 py-3 bg-white/40 hover:bg-white hover:text-[#B5D7F2] hover:shadow-md rounded-xl transition-all duration-200 flex items-center">
+                        <i class="fas fa-table mr-3 opacity-70"></i>Matriz de Adjacência
+                    </button>
+                </li>
+                <li>
+                    <button onclick="mostrarRepresentacao('matrizInc')"
+                        class="w-full text-left px-4 py-3 bg-white/40 hover:bg-white hover:text-[#B5D7F2] hover:shadow-md rounded-xl transition-all duration-200 flex items-center">
+                        <i class="fas fa-border-all mr-3 opacity-70"></i>Matriz de Incidência
+                    </button>
+                </li>
             </ul>
-            <div class="flex justify-between items-center mb-4 mt-4">
-                <h2 class="font-semiblod text-lg">Formas de Busca</h2>
+
+            <div class="flex justify-between items-center mb-4 mt-8">
+                <h2 class="font-bold text-lg text-slate-800 tracking-wide">Algoritmos</h2>
             </div>
-            <ul class="space-y-2 text-sm">
-                <li><button onclick="executarBusca('bfs')"
-                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Busca em Largura
-                        (BFS)</button></li>
-                <li><button onclick="executarBusca('dfs')"
-                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Busca em Profundidade
-                        (DFS)</button></li>
-                <li><button onclick="executarBusca('dijkstra')"
-                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">Dijkstra</button></li>
-                <li><button onclick="executarBusca('aEstrela')"
-                        class="hover:text-blue-600 cursor-pointer transition-colors duration-200">A*
-                        (A-Estrela)</button></li>
+            
+            <ul class="space-y-3 text-sm font-medium overflow-y-auto pr-1 custom-scrollbar">
+                <li>
+                    <button onclick="executarBusca('bfs')"
+                        class="w-full text-left px-4 py-3 bg-white/40 hover:bg-white hover:text-[#B5D7F2] hover:shadow-md rounded-xl transition-all duration-200 flex items-center">
+                        <i class="fas fa-water mr-3 opacity-70"></i>BFS (Largura)
+                    </button>
+                </li>
+                <li>
+                    <button onclick="executarBusca('dfs')"
+                        class="w-full text-left px-4 py-3 bg-white/40 hover:bg-white hover:text-[#B5D7F2] hover:shadow-md rounded-xl transition-all duration-200 flex items-center">
+                        <i class="fas fa-route mr-3 opacity-70"></i>DFS (Profundidade)
+                    </button>
+                </li>
+                <li>
+                    <button onclick="executarBusca('dijkstra')"
+                        class="w-full text-left px-4 py-3 bg-white/40 hover:bg-white hover:text-[#B5D7F2] hover:shadow-md rounded-xl transition-all duration-200 flex items-center">
+                        <i class="fas fa-map-marked-alt mr-3 opacity-70"></i>Dijkstra
+                    </button>
+                </li>
+                <li>
+                    <button onclick="executarBusca('aEstrela')"
+                        class="w-full text-left px-4 py-3 bg-white/40 hover:bg-white hover:text-[#B5D7F2] hover:shadow-md rounded-xl transition-all duration-200 flex items-center">
+                        <i class="fas fa-star mr-3 opacity-70"></i>A* (A-Estrela)
+                    </button>
+                </li>
             </ul>
         </aside>
+
         <button id="open-sidebar" onclick="alternarBarraLateral()"
-            class="hidden absolute left-0 top-4 bg-white border border-gray-300 rounded-r px-2 py-1 shadow z-20">
-            <i class="fas fa-chevron-right text-gray-700"></i>
+            class="hidden absolute left-2 top-24 bg-[#B5D7F2] text-slate-700 hover:bg-[#9bc5e8] border-2 border-white rounded-full p-2 shadow-lg z-20 transition-transform hover:scale-110">
+            <i class="fas fa-chevron-right"></i>
         </button>
 
-        <main class="flex-1 flex flex-col bg-white relative">
-            <div class="h-12 bg-gray-100 border-b border-gray-300 flex items-center px-4 space-x-4 text-sm">
+        <main class="flex-1 flex flex-col relative rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+            <div class="h-16 bg-[#ade4b5] border-b border-white/20 flex items-center px-6 space-x-3 text-sm shadow-sm overflow-x-auto whitespace-nowrap">
                 <button onclick="ativarModo('adicionarVertice')"
-                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Adicionar Vértice</button>
+                    class="px-4 py-2 bg-white text-slate-700 font-semibold rounded-lg shadow-sm hover:bg-[#f2b6b9] hover:text-white hover:shadow-md transition-all duration-200 border border-transparent hover:border-white/50">
+                    <i class="fas fa-circle-plus mr-1"></i> Vértice
+                </button>
                 <button onclick="ativarModo('adicionarArestaDirecionada')"
-                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Aresta Direcionada</button>
+                    class="px-4 py-2 bg-white text-slate-700 font-semibold rounded-lg shadow-sm hover:bg-[#f2b6b9] hover:text-white hover:shadow-md transition-all duration-200 border border-transparent hover:border-white/50">
+                    <i class="fas fa-long-arrow-alt-right mr-1"></i> Aresta Direcionada
+                </button>
                 <button onclick="ativarModo('adicionarArestaNaoDirecionada')"
-                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Aresta Não Direcionada</button>
+                    class="px-4 py-2 bg-white text-slate-700 font-semibold rounded-lg shadow-sm hover:bg-[#f2b6b9] hover:text-white hover:shadow-md transition-all duration-200 border border-transparent hover:border-white/50">
+                    <i class="fas fa-arrows-alt-h mr-1"></i> Aresta Simples
+                </button>
+
+                <div class="w-px h-8 bg-black/10 mx-2"></div>
+
                 <button id="botaoEditar" onclick="alternarModoEditar()"
-                    class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-800">Editar</button>
-                <button onclick="limparCores()" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Limpar
-                    Cores</button>
+                    class="px-4 py-2 bg-white text-slate-700 font-semibold rounded-lg shadow-sm hover:bg-[#DAC2FF] hover:text-white hover:shadow-md transition-all duration-200 border border-transparent hover:border-white/50">
+                    <i class="fas fa-pen mr-1"></i> Editar
+                </button>
+                <button onclick="limparCores()" 
+                    class="px-4 py-2 bg-white text-red-500 font-semibold rounded-lg shadow-sm hover:bg-red-400 hover:text-white hover:shadow-md transition-all duration-200 border border-transparent hover:border-white/50">
+                    <i class="fas fa-eraser mr-1"></i> Limpar
+                </button>
             </div>
-            <div id="canvas-container" class="flex-1 relative w-full h-full"></div>
+            
+            <div id="canvas-container" class="flex-1 relative w-full h-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px]"></div>
         </main>
 
         <aside
-            class="w-72 bg-white border-l border-gray-300 p-4 text-sm flex flex-col overflow-y-auto max-h-[calc(100vh-4rem)]">
-            <div id="animation-controls" class="mt-4 mb-4">
-                <div class="flex space-x-2 mb-3">
-                    <button onclick="passoAnterior()" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
-                        <i class="fas fa-step-backward"></i> Anterior
+            class="w-80 bg-[#DAC2FF] rounded-2xl p-5 text-sm flex flex-col overflow-y-auto max-h-[calc(100vh-2rem)] shadow-xl border border-white/40">
+            
+            <div id="animation-controls" class="bg-white/60 p-4 rounded-xl shadow-sm mb-6 backdrop-blur-sm">
+                <h3 class="font-bold text-slate-700 mb-3 text-xs uppercase tracking-wider">Controles</h3>
+                <div class="flex justify-between space-x-2 mb-3">
+                    <button onclick="passoAnterior()" class="flex-1 py-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 hover:shadow text-slate-600 transition-all">
+                        <i class="fas fa-step-backward"></i>
                     </button>
                     <button onclick="alternarReproducao()"
-                        class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                        class="flex-[2] py-2 bg-[#ade4b5] text-slate-800 font-bold rounded-lg shadow-sm hover:bg-[#9bd4a4] hover:shadow-md transition-all">
                         <i class="fas fa-play"></i> Play
                     </button>
-                    <button onclick="proximoPasso()" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
-                        <i class="fas fa-step-forward"></i> Próximo
+                    <button onclick="proximoPasso()" class="flex-1 py-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 hover:shadow text-slate-600 transition-all">
+                        <i class="fas fa-step-forward"></i>
                     </button>
                 </div>
 
-                <div class="flex items-center space-x-2 mb-2">
-                    <label for="velocidade" class="text-700 text-xs font-semibold">Velocidade:</label>
+                <div class="flex items-center space-x-3">
+                    <label for="velocidade" class="text-slate-600 font-semibold"><i class="fas fa-gauge-high mr-1"></i></label>
                     <select id="velocidade" onchange="mudarVelocidadeAnimacao(this.value)"
-                        class="p-1 border rounded text-sm flex-1">
+                        class="p-2 border-none rounded-lg text-sm flex-1 bg-white shadow-sm focus:ring-2 focus:ring-[#ade4b5] cursor-pointer outline-none">
                         <option value="2000">Lento</option>
                         <option value="1000" selected>Normal</option>
                         <option value="500">Rápido</option>
@@ -108,18 +167,27 @@
                 </div>
             </div>
 
-            <h2 class="font-semibold mb-2 mt-4">Descrição</h2>
-            <p id="descricao-output" class="text-gray-700 mb-4">
-                Selecione uma forma de visualização para ver a explicação aqui.
-            </p>
+            <div class="mb-6">
+                <h2 class="font-bold text-lg text-slate-800 mb-2 flex items-center">
+                    <i class="fas fa-info-circle text-[#f2b6b9] mr-2"></i> Descrição
+                </h2>
+                <div class="bg-white/60 p-4 rounded-xl border border-white/50 min-h-[80px]">
+                    <p id="descricao-output" class="text-slate-700 leading-relaxed">
+                        Selecione uma forma de visualização para ver a explicação aqui.
+                    </p>
+                </div>
+            </div>
 
-            <h2 class="font-semibold mb-2">Código Gerado</h2>
-            <pre id="code-output"
-                class="bg-gray-100 p-2 rounded overflow-auto flex-1 text-xs whitespace-pre-wrap break-words leading-relaxed mb-6">
-Selecione uma forma de visualização para ver o código correspondente aqui.
-    </pre>
+            <div class="flex-1 flex flex-col min-h-0">
+                <h2 class="font-bold text-lg text-slate-800 mb-2 flex items-center">
+                    <i class="fas fa-code text-[#fff9c4] mr-2"></i> Código
+                </h2>
+                <pre id="code-output"
+                    class="bg-gray-100 text-black-slate-200 p-4 rounded-xl overflow-auto flex-1 text-xs font-mono shadow-inner border border-slate-700 custom-scrollbar">
+// O código gerado aparecerá aqui
+Selecione uma visualização.</pre>
+            </div>
         </aside>
-
 
     </div>
 
