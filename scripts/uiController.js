@@ -16,15 +16,15 @@ export function mostrarRepresentacao(tipo) {
     switch (tipo) {
         case 'lista':
             codigo = gerarListaAdjacencia(vertices, arestas);
-            descricao = 'A Lista de Adjacência representa o grafo usando um mapa, onde cada vértice aponta para uma lista de seus vizinhos.';
+            descricao = 'A Lista de Adjacência representa o grafo usando um conjunto de listas onde cada vértice aponta para todos os vértices aos quais está conectado. É uma forma eficiente de armazenar grafos esparsos, pois registra apenas as arestas existentes.';
             break;
         case 'matrizAdj':
             codigo = gerarMatrizAdjacencia(vertices, arestas);
-            descricao = 'A Matriz de Adjacência usa uma tabela onde um valor 1 indica uma conexão entre vértices, e 0 a ausência dela.';
+            descricao = 'A Matriz de Adjacência representa o grafo em uma tabela onde linhas e colunas são vértices. Um valor 1 indica que existe uma aresta entre dois vértices, e 0 indica que não existe. Em grafos direcionados, a posição (u,v) marca a direção da aresta de u para v.';
             break;
         case 'matrizInc':
             codigo = gerarMatrizIncidencia(vertices, arestas);
-            descricao = 'A Matriz de Incidência relaciona vértices (linhas) com arestas (colunas). Útil para certas análises de grafos.';
+            descricao = 'A Matriz de Incidência representa o grafo usando uma tabela onde cada coluna é uma aresta e cada linha é um vértice. Em grafos não direcionados, um valor 1 indica que o vértice participa da aresta. Em grafos direcionados, usa-se -1 para o vértice de origem da aresta e 1 para o vértice de destino.';
             break;
     }
 
