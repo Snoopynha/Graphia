@@ -3,3 +3,65 @@
   overflow-x: auto; /* Adiciona uma barra de rolagem horizontal se o conteúdo transbordar */
   word-wrap: normal; /* Garante que palavras longas não sejam quebradas */
 }
+
+@media (max-width: 1024px) {
+  body>div.flex {
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 1.5rem !important;
+    overflow-y: auto !important;
+    padding-bottom: 2rem;
+  }
+
+  main {
+    order: 1;
+    width: 100% !important;
+    height: 60vh !important;
+    min-height: 400px;
+  }
+
+  #sidebar {
+    order: 2;
+    width: 100% !important;
+  }
+
+  aside {
+    order: 3;
+    width: 100% !important;
+    max-height: none !important;
+  }
+
+  main>div:first-child {
+    height: auto !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px !important;
+    gap: 8px;
+  }
+
+  main>div:first-child button {
+    flex-grow: 1;
+    font-size: 0.8rem;
+    padding: 8px 12px !important;
+  }
+
+  #open-sidebar,
+  #sidebar button[onclick="alternarBarraLateral()"] {
+    display: none !important;
+  }
+
+  nav {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  nav .text-2xl {
+    font-size: 1.2rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  main {
+    height: 50vh !important;
+  }
+}
