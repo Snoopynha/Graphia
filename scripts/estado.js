@@ -16,7 +16,8 @@ const estadoGlobal = {
     passoAtualAnimacao: 0,
     reproduzindoAnimacao: false,
     intervaloReproducao: null,
-    velocidadeAnimacao: 1000
+    velocidadeAnimacao: 1000,
+    passoAlgoritmoAtual: null
 };
 
 export default estadoGlobal;

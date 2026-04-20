@@ -16,8 +16,11 @@ export function buscaEmLargura(arestas, verticeInicio, verticeFim) {
 
     // Animação inicial
     animacao.push({
-        mensagem: `Iniciando BFS a partir de ${verticeInicio.rotulo}.`,
-        verticesVisitados: [verticeInicio.rotulo]
+        tipo: 'INICIO', no: verticeInicio.rotulo,
+        estrutura: fila.map(v => v.rotulo),
+        motivo: `A busca se inicia em ${verticeInicio.rotulo}. O vértice é adicionado à fila de processamento.`,
+        explicacao: 'A Busca em Largura (BFS) explora o grafo em camadas, garantindo encontrar o caminho com o menor número de arestas. Ela usa uma Fila (FIFO) como estrutura principal.',
+        destaque: { verticesAtuais: [verticeInicio.rotulo], verticesVisitados: Array.from(visitados) }
     });
 
     // Loop principal da BFS
@@ -29,9 +32,11 @@ export function buscaEmLargura(arestas, verticeInicio, verticeFim) {
 
         // Marca o vértice atual como visitado
         animacao.push({
-            mensagem: `Visitando ${atual.rotulo}...`,
-            verticesAtuais: [atual.rotulo],
-            verticesVisitados: Array.from(visitados)
+            tipo: 'VISITA', no: atual.rotulo,
+            estrutura: fila.map(v => v.rotulo),
+            motivo: `Removido da frente da fila para analisar seus vizinhos.`,
+            explicacao: 'Ao processar um nó, a BFS garante que todos os nós da camada atual sejam analisados antes de descer para a próxima camada do grafo.',
+            destaque: { verticesAtuais: [atual.rotulo], verticesVisitados: Array.from(visitados) }
         });
 
         // Se chegamos ao vértice de destino, encerramos a busca
@@ -49,9 +54,11 @@ export function buscaEmLargura(arestas, verticeInicio, verticeFim) {
                 predecessores[vizinho.rotulo] = atual.rotulo;
                 fila.push(vizinho);
                 animacao.push({
-                    mensagem: `Descobrindo ${vizinho.rotulo} a partir de ${atual.rotulo}.`,
-                    verticesVisitados: Array.from(visitados),
-                    arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }]
+                    tipo: 'DESCOBERTA', no: vizinho.rotulo,
+                    estrutura: fila.map(v => v.rotulo),
+                    motivo: `O vizinho ${vizinho.rotulo} é novo. Ele entra no final da fila.`,
+                    explicacao: 'Sempre que descobrimos um novo vértice válido, marcamos como visitado instantaneamente para evitar processamento duplicado (ciclos).',
+                    destaque: { verticesVisitados: Array.from(visitados), arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }] }
                 });
             }
         }
@@ -61,15 +68,18 @@ export function buscaEmLargura(arestas, verticeInicio, verticeFim) {
     if (encontrado) {
         const caminho = reconstruirCaminho(predecessores, verticeFim.rotulo);
         animacao.push({
-            mensagem: `Caminho encontrado! Comprimento: ${caminho.length - 1} arestas.`,
-            caminho: caminho,
-            verticesVisitados: Array.from(visitados)
+            tipo: 'FIM', no: verticeFim.rotulo, estrutura: [],
+            motivo: `O alvo ${verticeFim.rotulo} foi processado e o caminho foi reconstruído.`,
+            explicacao: 'Percorrendo os predecessores gravados durante a busca, da chegada até o final, conseguimos desenhar a rota exata.',
+            destaque: { caminho: caminho, verticesVisitados: Array.from(visitados) }
         });
         // Caso contrário, indica que o vértice de fim não é alcançável
     } else {
         animacao.push({
-            mensagem: `Vértice ${verticeFim.rotulo} não alcançável a partir de ${verticeInicio.rotulo}.`,
-            verticesVisitados: Array.from(visitados)
+            tipo: 'FIM', no: null, estrutura: [],
+            motivo: 'A fila esvaziou sem encontrar o destino final.',
+            explicacao: 'Quando a estrutura de dados (fila) fica vazia e não encontramos o alvo, significa que não existe um caminho possível entre a origem e o destino.',
+            destaque: { verticesVisitados: Array.from(visitados) }
         });
     }
 
@@ -95,8 +105,11 @@ export function buscaEmProfundidade(arestas, verticeInicio, verticeFim) {
 
     // Animação inicial
     animacao.push({
-        mensagem: `Iniciando DFS a partir de ${verticeInicio.rotulo}.`,
-        verticesAtuais: [verticeInicio.rotulo]
+        tipo: 'INICIO', no: verticeInicio.rotulo,
+        estrutura: pilha.map(v => v.rotulo),
+        motivo: `Adicionando o ponto de partida ${verticeInicio.rotulo} no topo da pilha.`,
+        explicacao: 'A Busca em Profundidade (DFS) avança até o limite de um caminho antes de retroceder. Ela utiliza uma Pilha (LIFO) para forçar a descida contínua nas conexões.',
+        destaque: { verticesAtuais: [verticeInicio.rotulo] }
     });
 
     // Loop principal da DFS
@@ -111,9 +124,11 @@ export function buscaEmProfundidade(arestas, verticeInicio, verticeFim) {
         visitados.add(atual.rotulo);
 
         animacao.push({
-            mensagem: `Visitando ${atual.rotulo}...`,
-            verticesAtuais: [atual.rotulo],
-            verticesVisitados: Array.from(visitados)
+            tipo: 'VISITA', no: atual.rotulo,
+            estrutura: pilha.map(v => v.rotulo),
+            motivo: `Retirando do topo da pilha e marcando como visitado definitivamente.`,
+            explicacao: 'A DFS mergulha em um caminho cego. Se houver opções, ela processa sempre a última opção que foi vista (o topo da pilha).',
+            destaque: { verticesAtuais: [atual.rotulo], verticesVisitados: Array.from(visitados) }
         });
 
         // Se chegamos ao vértice de destino, encerramos a busca
@@ -130,9 +145,11 @@ export function buscaEmProfundidade(arestas, verticeInicio, verticeFim) {
                 predecessores[vizinho.rotulo] = atual.rotulo;
                 pilha.push(vizinho);
                 animacao.push({
-                    mensagem: `Empilhando ${vizinho.rotulo} a partir de ${atual.rotulo}.`,
-                    verticesVisitados: Array.from(visitados),
-                    arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }]
+                    tipo: 'DESCOBERTA', no: vizinho.rotulo,
+                    estrutura: pilha.map(v => v.rotulo),
+                    motivo: `Aresta explorada. O vizinho ${vizinho.rotulo} entra no topo da pilha.`,
+                    explicacao: 'Ao empilhar, o algoritmo agenda este vizinho para ser explorado imediatamente no próximo passo, priorizando a profundidade.',
+                    destaque: { verticesVisitados: Array.from(visitados), arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }] }
                 });
             }
         }
@@ -142,15 +159,18 @@ export function buscaEmProfundidade(arestas, verticeInicio, verticeFim) {
     if (encontrado) {
         const caminho = reconstruirCaminho(predecessores, verticeFim.rotulo);
         animacao.push({
-            mensagem: `Caminho encontrado!`,
-            caminho: caminho,
-            verticesVisitados: Array.from(visitados)
+            tipo: 'FIM', no: verticeFim.rotulo, estrutura: [],
+            motivo: `Destino alcançado. Processo interrompido.`,
+            explicacao: 'A DFS encontrou um caminho viável. É importante lembrar que ela NÃO garante o caminho mais curto, apenas um caminho possível.',
+            destaque: { caminho: caminho, verticesVisitados: Array.from(visitados) }
         });
     // Caso contrário, indica que o vértice de fim não é alcançável
     } else {
         animacao.push({
-            mensagem: `Vértice ${verticeFim.rotulo} não alcançável.`,
-            verticesVisitados: Array.from(visitados)
+            tipo: 'FIM', no: null, estrutura: [],
+            motivo: `Pilha vazia. O grafo inteiro foi mapeado sem achar o destino.`,
+            explicacao: 'Como a pilha LIFO secou, todos os caminhos em profundidade resultaram em becos sem saída em relação ao nosso alvo.',
+            destaque: { verticesVisitados: Array.from(visitados) }
         });
     }
 
@@ -186,10 +206,14 @@ export function dijkstra(vertices, arestas, verticeInicio, verticeFim, custosAre
     // Adiciona o vértice inicial à fila de prioridade
     filaPrioridade.enfileirar(verticeInicio, 0);
 
+    const getFilaStr = () => filaPrioridade.elementos.map(e => `${e.elemento.rotulo}(${e.prioridade})`);
+
     // Animação inicial
     animacao.push({
-        mensagem: `Iniciando Dijkstra. Distância de ${verticeInicio.rotulo} = 0.`,
-        verticesVisitados: [verticeInicio.rotulo]
+        tipo: 'INICIO', no: verticeInicio.rotulo, estrutura: getFilaStr(),
+        motivo: `Custos mapeados como Infinito. Partida ${verticeInicio.rotulo} tem custo 0.`,
+        explicacao: 'O Dijkstra é focado no peso das arestas. Ele utiliza uma Fila de Prioridade (Min-Heap) para sempre avaliar o caminho mais barato conhecido primeiro.',
+        destaque: { verticesVisitados: [verticeInicio.rotulo] }
     });
 
     // Loop principal do Dijkstra
@@ -198,9 +222,10 @@ export function dijkstra(vertices, arestas, verticeInicio, verticeFim, custosAre
         const { elemento: atual } = filaPrioridade.desenfileirar();
 
         animacao.push({
-            mensagem: `Visitando ${atual.rotulo} (Distância: ${distancias[atual.rotulo]})`,
-            verticesAtuais: [atual.rotulo],
-            verticesVisitados: Object.keys(predecessores).filter(k => predecessores[k] !== null)
+            tipo: 'VISITA', no: atual.rotulo, estrutura: getFilaStr(),
+            motivo: `Nó mais próximo (custo: ${distancias[atual.rotulo]}) retirado da prioridade.`,
+            explicacao: 'Ao processar o topo da fila de prioridade, o Dijkstra garante que encontrou a rota absoluta mais barata para o nó em questão.',
+            destaque: { verticesAtuais: [atual.rotulo], verticesVisitados: Object.keys(predecessores).filter(k => predecessores[k] !== null) }
         });
 
         // Se chegamos ao vértice de destino, encerramos a busca
@@ -211,12 +236,6 @@ export function dijkstra(vertices, arestas, verticeInicio, verticeFim, custosAre
         for (const { vizinho, peso } of vizinhos) {
             const novaDistancia = distancias[atual.rotulo] + peso;
 
-            // Animação da análise do vizinho
-            animacao.push({
-                mensagem: `Analisando ${vizinho.rotulo} (Dist. atual: ${distancias[vizinho.rotulo]})`,
-                arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }]
-            });
-
             // Se a nova distância for menor, atualiza a distância e o predecessor
             if (novaDistancia < distancias[vizinho.rotulo]) {
                 distancias[vizinho.rotulo] = novaDistancia;
@@ -224,8 +243,17 @@ export function dijkstra(vertices, arestas, verticeInicio, verticeFim, custosAre
                 filaPrioridade.enfileirar(vizinho, novaDistancia);
 
                 animacao.push({
-                    mensagem: `Distância para ${vizinho.rotulo} atualizada: ${novaDistancia}`,
-                    verticesVisitados: Object.keys(predecessores).filter(k => predecessores[k] !== null)
+                    tipo: 'ATUALIZAÇÃO', no: vizinho.rotulo, estrutura: getFilaStr(),
+                    motivo: `Aresta analisada. Novo custo total para chegar aqui é ${novaDistancia}.`,
+                    explicacao: 'O processo de Relaxamento. Se encontrar um caminho de custo inferior a um nó, atualizamos seu valor e o reposicionamos na Fila.',
+                    destaque: { verticesVisitados: Object.keys(predecessores).filter(k => predecessores[k] !== null), arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }] }
+                });
+            } else {
+                animacao.push({
+                    tipo: 'DESCOBERTA', no: vizinho.rotulo, estrutura: getFilaStr(),
+                    motivo: `Avaliando rota alternativa (custo tentado: ${novaDistancia}), mas não é melhor.`,
+                    explicacao: 'O caminho através do nó atual não melhorou o custo que já conhecemos para este vizinho, então ignoramos esta via.',
+                    destaque: { arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }] }
                 });
             }
         }
@@ -234,8 +262,10 @@ export function dijkstra(vertices, arestas, verticeInicio, verticeFim, custosAre
     // Reconstrói o caminho encontrado
     const caminho = reconstruirCaminho(predecessores, verticeFim.rotulo);
     animacao.push({
-        mensagem: `Caminho mais curto encontrado! Custo: ${distancias[verticeFim.rotulo]}`,
-        caminho: caminho
+        tipo: 'FIM', no: verticeFim.rotulo, estrutura: getFilaStr(),
+        motivo: `Busca encerrada com Custo Mínimo Final de: ${distancias[verticeFim.rotulo]}.`,
+        explicacao: 'A garantia matemática do Dijkstra assegura que não existe rota mais barata possível entre a origem e este destino (desde que não existam pesos negativos).',
+        destaque: { caminho: caminho }
     });
 
     return { animacao };
@@ -261,6 +291,8 @@ export function buscaAEstrela(vertices, arestas, verticeInicio, verticeFim, cust
     const fScore = {};
     // Fila de prioridade para selecionar o próximo vértice com o menor fScore
     const filaPrioridade = new FilaDePrioridade();
+    // Conjunto para rastrear os nós visitados na animação
+    const nosVisitadosAnimacao = new Set([verticeInicio.rotulo]);
 
     // Inicializa gScore e fScore
     vertices.forEach(v => {
@@ -277,13 +309,14 @@ export function buscaAEstrela(vertices, arestas, verticeInicio, verticeFim, cust
     // Adiciona o vértice inicial à fila de prioridade
     filaPrioridade.enfileirar(verticeInicio, fScore[verticeInicio.rotulo]);
 
-    animacao.push({
-        mensagem: `Iniciando A*. Custo g(${verticeInicio.rotulo})=0, f=${fScore[verticeInicio.rotulo].toFixed(2)}`,
-        verticesVisitados: [verticeInicio.rotulo]
-    });
+    const getFilaStr = () => filaPrioridade.elementos.map(e => `${e.elemento.rotulo}(f:${e.prioridade.toFixed(0)})`);
 
-    // Conjunto para rastrear os nós visitados na animação
-    const nosVisitadosAnimacao = new Set([verticeInicio.rotulo]);
+    animacao.push({
+        tipo: 'INICIO', no: verticeInicio.rotulo, estrutura: getFilaStr(),
+        motivo: `Avaliando heurística do Início ao Fim. F-Score inicial é ${fScore[verticeInicio.rotulo].toFixed(1)}.`,
+        explicacao: 'O A* soma o custo real percorrido (G) com uma previsão de distância em linha reta até o alvo (Heurística H). F = G + H. Ele usa uma Fila de Prioridade ordenada pelo valor F.',
+        destaque: { verticesVisitados: [verticeInicio.rotulo] }
+    });
 
     // Loop principal do A*
     while (!filaPrioridade.estaVazia()) {
@@ -291,18 +324,20 @@ export function buscaAEstrela(vertices, arestas, verticeInicio, verticeFim, cust
         const { elemento: atual } = filaPrioridade.desenfileirar();
 
         animacao.push({
-            mensagem: `Visitando ${atual.rotulo} (g: ${gScore[atual.rotulo]}, f: ${fScore[atual.rotulo].toFixed(2)})`,
-            verticesAtuais: [atual.rotulo],
-            verticesVisitados: Array.from(nosVisitadosAnimacao)
+            tipo: 'VISITA', no: atual.rotulo, estrutura: getFilaStr(),
+            motivo: `Nó mais promissor retirado (G: ${gScore[atual.rotulo]}, F: ${fScore[atual.rotulo].toFixed(1)}).`,
+            explicacao: 'O algoritmo A* orienta a busca em direção ao alvo com base em sua posição, priorizando caminhos que se aproximam do objetivo e descartando aqueles que se afastam dele.',
+            destaque: { verticesAtuais: [atual.rotulo], verticesVisitados: Array.from(nosVisitadosAnimacao) }
         });
 
         // Se chegamos ao vértice de destino, reconstruímos o caminho
         if (atual === verticeFim) {
             const caminho = reconstruirCaminho(predecessores, verticeFim.rotulo);
             animacao.push({
-                mensagem: `Caminho encontrado! Custo: ${gScore[verticeFim.rotulo]}`,
-                caminho: caminho,
-                verticesVisitados: Array.from(nosVisitadosAnimacao)
+                tipo: 'FIM', no: verticeFim.rotulo, estrutura: [],
+                motivo: `Alvo atingido de forma otimizada. Custo real (G): ${gScore[verticeFim.rotulo]}.`,
+                explicacao: 'Unindo a precisão do Dijkstra com o direcionamento da Busca Gulosa, o A* encontra o menor caminho avaliando uma quantidade menor de nós.',
+                destaque: { caminho: caminho, verticesVisitados: Array.from(nosVisitadosAnimacao) }
             });
             return { animacao };
         }
@@ -312,11 +347,6 @@ export function buscaAEstrela(vertices, arestas, verticeInicio, verticeFim, cust
         // Para cada vizinho, calcula o gScore tentativo
         for (const { vizinho, peso } of vizinhos) {
             const gScoreTentativo = gScore[atual.rotulo] + peso;
-
-            animacao.push({
-                mensagem: `Analisando ${vizinho.rotulo} (g atual: ${gScore[vizinho.rotulo]})`,
-                arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }]
-            });
 
             // Se o gScore tentativo for melhor, atualiza os scores e o predecessor
             if (gScoreTentativo < gScore[vizinho.rotulo]) {
@@ -333,8 +363,17 @@ export function buscaAEstrela(vertices, arestas, verticeInicio, verticeFim, cust
                 nosVisitadosAnimacao.add(vizinho.rotulo);
 
                 animacao.push({
-                    mensagem: `Caminho para ${vizinho.rotulo} atualizado! g=${gScoreTentativo}, f=${fScore[vizinho.rotulo].toFixed(2)}`,
-                    verticesVisitados: Array.from(nosVisitadosAnimacao)
+                    tipo: 'ATUALIZAÇÃO', no: vizinho.rotulo, estrutura: getFilaStr(),
+                    motivo: `Nova rota melhorada! G ajustado para ${gScoreTentativo}. A expectativa final (F) caiu para ${fScore[vizinho.rotulo].toFixed(1)}.`,
+                    explicacao: 'Como esta via é melhor e está promissora na direção do alvo, atualizamos a projeção F e reordenamos o vizinho na fila.',
+                    destaque: { verticesVisitados: Array.from(nosVisitadosAnimacao), arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }] }
+                });
+            } else {
+                animacao.push({
+                    tipo: 'DESCOBERTA', no: vizinho.rotulo, estrutura: getFilaStr(),
+                    motivo: `Analisou aresta, mas o G (${gScoreTentativo}) é pior do que o caminho já conhecido.`,
+                    explicacao: 'Mesmo guiado por coordenadas, respeitamos o peso. Este caminho desvia negativamente, então descartamos.',
+                    destaque: { arestasAtuais: [{ de: atual.rotulo, para: vizinho.rotulo }] }
                 });
             }
         }
@@ -342,8 +381,10 @@ export function buscaAEstrela(vertices, arestas, verticeInicio, verticeFim, cust
 
     // Se chegamos aqui, o vértice de fim não é alcançável
     animacao.push({
-        mensagem: `Vértice ${verticeFim.rotulo} não alcançável.`,
-        verticesVisitados: Array.from(nosVisitadosAnimacao)
+        tipo: 'FIM', no: null, estrutura: [],
+        motivo: 'A fila prioritária se esgotou. Alvo inatingível.',
+        explicacao: 'Apesar do forte direcionamento geográfico e matemático, não foi encontrada nenhuma ligação válida de arestas até o destino.',
+        destaque: { verticesVisitados: Array.from(nosVisitadosAnimacao) }
     });
 
     return { animacao };

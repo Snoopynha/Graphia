@@ -134,28 +134,31 @@ export function atualizarPassoAnimacao() {
     if (estado.animacaoBusca.length === 0) return;
 
     const passoAtual = estado.animacaoBusca[estado.passoAtualAnimacao];
+    estado.passoAlgoritmoAtual = passoAtual;
 
-    // Pinta os vertices ja visitados de azul e os atuais de laranja
-    if (passoAtual.verticesVisitados) {
-        passoAtual.verticesVisitados.forEach(rotulo => {
+    const destaque = passoAtual.destaque || {};
+
+    // Aplica destaques visuais de acordo com o novo objeto (azul os visitados e os atuais de laranja)
+    if (destaque.verticesVisitados) {
+        destaque.verticesVisitados.forEach(rotulo => {
             const v = estado.vertices.find(vert => vert.rotulo === rotulo);
-            if (v) v.cor = '#60a5fa'; // Azul para vertices visitados
+            if (v) v.cor = '#60a5fa'; 
         });
     }
 
-    if (passoAtual.verticesAtuais) {
-        passoAtual.verticesAtuais.forEach(rotulo => {
+    if (destaque.verticesAtuais) {
+        destaque.verticesAtuais.forEach(rotulo => {
             const v = estado.vertices.find(vert => vert.rotulo === rotulo);
             if (v) {
                 v.cor = '#f59e0b'; // Laranja para vertices atuais
-                v.texto = passoAtual.mensagem || '';
+                v.texto = passoAtual.tipo;
             }
         });
     }
 
     // Pinta as arestas visitadas de azul e a atual de laranja
-    if (passoAtual.arestasVisitadas) {
-        passoAtual.arestasVisitadas.forEach(arestaInfo => {
+    if (destaque.arestasVisitadas) {
+        destaque.arestasVisitadas.forEach(arestaInfo => {
             const a = estado.arestas.find(a =>
                 (a.de.rotulo === arestaInfo.de && a.para.rotulo === arestaInfo.para) ||
                 (!a.direcionada && a.de.rotulo === arestaInfo.para && a.para.rotulo === arestaInfo.de)
@@ -164,8 +167,8 @@ export function atualizarPassoAnimacao() {
         });
     }
 
-    if (passoAtual.arestasAtuais) {
-        passoAtual.arestasAtuais.forEach(arestaInfo => {
+    if (destaque.arestasAtuais) {
+        destaque.arestasAtuais.forEach(arestaInfo => {
             const a = estado.arestas.find(a =>
                 (a.de.rotulo === arestaInfo.de && a.para.rotulo === arestaInfo.para) ||
                 (!a.direcionada && a.de.rotulo === arestaInfo.para && a.para.rotulo === arestaInfo.de)
@@ -175,14 +178,14 @@ export function atualizarPassoAnimacao() {
     }
 
     // Destaca o caminho encontrado
-    if (passoAtual.caminho) {
-        for (let i = 0; i < passoAtual.caminho.length; i++) {
-            const rotulo = passoAtual.caminho[i];
+    if (destaque.caminho) {
+        for (let i = 0; i < destaque.caminho.length; i++) {
+            const rotulo = destaque.caminho[i];
             const v = estado.vertices.find(vert => vert.rotulo === rotulo);
             if (v) v.cor = '#10b981';
 
             if (i > 0) {
-                const rotuloAnterior = passoAtual.caminho[i - 1];
+                const rotuloAnterior = destaque.caminho[i - 1];
                 const a = estado.arestas.find(a =>
                     (a.de.rotulo === rotuloAnterior && a.para.rotulo === rotulo) ||
                     (!a.direcionada && a.de.rotulo === rotulo && a.para.rotulo === rotuloAnterior)
@@ -192,9 +195,46 @@ export function atualizarPassoAnimacao() {
         }
     }
 
-    // Atualiza o painel de descrição com a mensagem do passo atual
+    renderizarUIExplicacao(passoAtual);
+}
+
+/**
+ * Constrói o HTML para mostrar as filas/pilhas e motivos de forma didática.
+ */
+function renderizarUIExplicacao(passo) {
     const areaDescricao = document.getElementById('descricao-output');
-    if (areaDescricao) {
-        areaDescricao.textContent = passoAtual.mensagem || '';
-    }
+    if (!areaDescricao) return;
+
+    // Constrói as "caixinhas" da estrutura de dados
+    const htmlEstrutura = passo.estrutura && passo.estrutura.length > 0
+        ? passo.estrutura.map(item => `<div style="display:inline-block; background:#e0e7ff; border:1px solid #c7d2fe; color:#3730a3; padding:2px 8px; border-radius:4px; font-size:13px; margin-right:4px;">${item}</div>`).join('')
+        : '<span style="color:#9ca3af; font-size:13px; font-style:italic;">(vazia)</span>';
+
+    // Determina a cor da tag de tipo de evento
+    let corTag = '#3b82f6';
+    if (passo.tipo === 'INICIO' || passo.tipo === 'FIM') corTag = '#10b981';
+    if (passo.tipo === 'DESCOBERTA' || passo.tipo === 'ATUALIZAÇÃO') corTag = '#8b5cf6';
+
+    areaDescricao.innerHTML = `
+        <div style="margin-bottom: 12px; display:flex; align-items:center; gap: 8px;">
+            <span style="background:${corTag}; color:white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${passo.tipo}</span>
+            <span style="font-weight: bold; color: #374151;">Alvo: ${passo.no || 'Geral'}</span>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 14px; font-weight: bold; color: #4b5563; margin-bottom: 4px;">Motivo do passo:</div>
+            <div style="color: #1f2937;">${passo.motivo}</div>
+        </div>
+
+        <div style="background: #f8fafc; border-left: 4px solid #f59e0b; padding: 10px; margin-bottom: 12px; font-size: 13px; color: #475569;">
+            <strong>Conceito:</strong> ${passo.explicacao}
+        </div>
+
+        <div style="border-top: 1px solid #e5e7eb; padding-top: 10px;">
+            <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #6b7280; margin-bottom: 6px;">Estado da Estrutura (Memória)</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                ${htmlEstrutura}
+            </div>
+        </div>
+    `;
 }
