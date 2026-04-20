@@ -44,4 +44,8 @@ window.encerrarTutorial = encerrarTutorial;
 window.proximoPassoTutorial = proximoPassoTutorial;
 window.passoAnteriorTutorial = passoAnteriorTutorial;
 
+// --- Conecta o modal de avaliação ao JS ---
+window.abrirModalAvaliacao = ui.abrirModalAvaliacao;
+window.fecharModalAvaliacao = ui.fecharModalAvaliacao;
+
 console.log("Simulador de Grafos Modularizado e Iniciado!");

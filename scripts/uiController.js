@@ -427,6 +427,41 @@ function renderizarResposta(res) {
 }
 
 /**
+ * Abre o modal de avaliação para o TCC com animação de fade e scale.
+ */
+export function abrirModalAvaliacao() {
+    const overlay = document.getElementById('avaliacao-overlay');
+    const modal = document.getElementById('avaliacao-modal');
+    
+    // Remove o hidden do container principal
+    overlay.classList.remove('hidden');
+    
+    // Um pequeno delay (10ms) é necessário para que o navegador processe 
+    // a remoção do 'hidden' antes de aplicar as classes de transição visual
+    setTimeout(() => {
+        modal.classList.remove('scale-95', 'opacity-0');
+        modal.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+/**
+ * Fecha o modal de avaliação com animação.
+ */
+export function fecharModalAvaliacao() {
+    const overlay = document.getElementById('avaliacao-overlay');
+    const modal = document.getElementById('avaliacao-modal');
+    
+    // Primeiro faz a animação de diminuir e sumir
+    modal.classList.remove('scale-100', 'opacity-100');
+    modal.classList.add('scale-95', 'opacity-0');
+    
+    // Espera a animação de 300ms terminar para colocar o 'hidden' de volta
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 300);
+}
+
+/**
  * Controla a visibilidade da barra lateral e seus elementos.
  */
 // Antigo toggleSidebar() - index.html

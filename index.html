@@ -37,7 +37,7 @@
         <img src="assets/GRAPHIA.png" alt="Logo" class="h-20">
         <div class="flex items-center space-x-6 text-2xl text-gray-700">
             <i id="btn-iniciar-tutorial" onclick="iniciarTutorialGuiado()" class="fas fa-file-alt hover:text-[#d4d4d4] cursor-pointer transition-colors duration-200 drop-shadow-sm"></i>
-            <i class="fa-solid fa-inbox hover:text-[#d4d4d4] cursor-pointer transition-colors duration-200 drop-shadow-sm"></i>
+            <i id="btn-formulario" onclick="abrirModalAvaliacao()" class="fa-solid fa-inbox hover:text-[#d4d4d4] cursor-pointer transition-colors duration-200 drop-shadow-sm"></i>
         </div>
     </nav>
 
@@ -207,6 +207,37 @@ Selecione uma visualização.</pre>
                 <button id="tutorial-btn-voltar" onclick="passoAnteriorTutorial()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm font-medium transition-colors">Voltar</button>
                 <button id="tutorial-btn-proximo" onclick="proximoPassoTutorial()" class="px-4 py-1.5 bg-[#DAC2FF] hover:bg-[#c2a3ff] text-slate-800 rounded text-sm font-bold shadow-sm transition-colors">Próximo</button>
             </div>
+        </div>
+    </div>
+
+    <div id="avaliacao-overlay" class="hidden fixed inset-0 z-[10001] bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 flex justify-center items-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-[400px] border-2 border-[#B5D7F2] transform transition-all duration-300 scale-95 opacity-0" id="avaliacao-modal">   
+            
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-800 text-xl flex items-center">
+                    <i class="fas fa-star text-[#facc15] mr-2"></i> Avalie o Graphia
+                </h3>
+                <button onclick="fecharModalAvaliacao()" class="text-slate-400 hover:text-red-500 transition-colors bg-slate-100 hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+                Este simulador é o produto prático do meu <strong>Trabalho de Conclusão de Curso (TCC)</strong>. 
+                Seu feedback é essencial para validar se a ferramenta realmente ajuda no ensino e aprendizado de grafos. 
+                <br><br>
+                Por favor, escolha o seu perfil abaixo para responder a uma pesquisa rápida (leva menos de 5 minutinhos!).
+            </p>
+            
+            <div class="flex flex-col gap-3">
+                <a href="https://forms.gle/t9DqSnBmoiRxoFNA8" target="_blank" onclick="fecharModalAvaliacao()" class="w-full py-3 bg-[#B5D7F2] hover:bg-[#9bc5e8] text-slate-800 font-bold rounded-xl shadow-sm hover:shadow text-center transition-all flex items-center justify-center">
+                    <i class="fas fa-user-graduate mr-2"></i> Sou Aluno
+                </a>
+                <a href="https://forms.gle/2KVJy9zdBKtG1kP1A" target="_blank" onclick="fecharModalAvaliacao()" class="w-full py-3 bg-[#DAC2FF] hover:bg-[#c2a3ff] text-slate-800 font-bold rounded-xl shadow-sm hover:shadow text-center transition-all flex items-center justify-center">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i> Sou Professor
+                </a>
+            </div>
+            
         </div>
     </div>
 
