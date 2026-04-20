@@ -24,7 +24,7 @@ const etapas = [
     },
     {
         alvo: "#btn-aresta-ndir",
-        titulo: "2. Conectando com Arestas",
+        titulo: "2. Conectando com Arestas Simples",
         texto: "Para criar uma ligação simples (Aresta não direcionada), ative este modo. E clique nos vértice dois vértices que você quer que tenham uma ligação.",
         posicao: "bottom",
         acaoPre: () => ativarModo('adicionarArestaNaoDirecionada')
@@ -58,6 +58,30 @@ const etapas = [
             const sidebar = document.getElementById("sidebar");
             if (sidebar.classList.contains("w-0")) alternarBarraLateral();
         }
+    },
+    {
+        alvo: "#animation-controls",
+        titulo: "6. Controle de Animação",
+        texto: "Controle a velocidade e navegue passo a passo pelos algoritmos de busca executados.",
+        posicao: "left"
+    },
+    {
+        alvo: "#code-output",
+        titulo: "7. Estruturas e Código",
+        texto: "Veja aqui o pseudocódigo do algoritmo ou a representação formal (matriz/lista) do seu grafo.",
+        posicao: "left"
+    },
+    {
+        alvo: "#btn-iniciar-tutorial",
+        titulo: "Ajuda",
+        texto: "Precisa relembrar algo? Clique aqui a qualquer momento para reiniciar este tour.",
+        posicao: "bottom"
+    },
+    {
+        alvo: "#btn-formulario",
+        titulo: "Sua Opinião conta!",
+        texto: "Acesse os formulários para avaliar a ferramenta. Seu feedback é fundamental para o meu TCC!",
+        posicao: "bottom"
     },
     {
         alvo: null,
@@ -140,25 +164,85 @@ function posicionarTooltip(passo) {
     if (!alvoEl) return;
 
     estadoTutorial.alvoAtualDestacado = alvoEl;
+
+    const navbar = alvoEl.closest('nav');
+    if (navbar) {
+        navbar.classList.remove('z-50');
+        navbar.classList.add('z-[9999]');
+        estadoTutorial.navbarElevada = navbar;
+    }
+    if (alvoEl.tagName === 'I') {
+        alvoEl.style.display = 'inline-block';
+        alvoEl.classList.add('bg-white', 'rounded-lg', 'p-2', 'ring-4', 'ring-[#DAC2FF]');
+        estadoTutorial.isIcone = true;
+    } else {
+        alvoEl.classList.add('ring-4', 'ring-[#DAC2FF]');
+        estadoTutorial.isIcone = false;
+    }
+
     alvoEl.classList.add('relative', 'z-[9999]', 'shadow-lg');
     alvoEl.style.pointerEvents = 'auto';
     
     const rect = alvoEl.getBoundingClientRect();
+    const scrollY = window.scrollY;
+    const larguraTooltip = 320;
+    let topo = 0;
+    let esquerda = 0;
     tooltip.style.transform = 'none'; // Reseta o transform do centro
     
-    if (passo.posicao === 'bottom') {
-        tooltip.style.top = `${rect.bottom + 15}px`;
-        tooltip.style.left = `${rect.left + (rect.width / 2) - 160}px`;
-    } else if (passo.posicao === 'right') {
-        tooltip.style.top = `${rect.top + 20}px`;
-        tooltip.style.left = `${rect.right + 15}px`;
+    switch (passo.posicao) {
+        case 'bottom':
+            topo = rect.bottom + scrollY + 15;
+            esquerda = rect.left + (rect.width / 2) - (larguraTooltip / 2);
+            break;
+        case 'right':
+            topo = rect.top + scrollY;
+            esquerda = rect.right + 15;
+            break;
+        case 'left':
+            topo = rect.top + scrollY;
+            esquerda = rect.left - larguraTooltip - 15;
+            break;
+        default:
+            tooltip.style.top = '50%';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translate(-50%, -50%)';
     }
+
+    const margemSeguranca = 20;
+    const larguraJanela = window.innerWidth;
+
+    if (esquerda < margemSeguranca) {
+        esquerda = margemSeguranca;
+    } else if (esquerda + larguraTooltip > larguraJanela - margemSeguranca) {
+        esquerda = larguraJanela - larguraTooltip - margemSeguranca;
+    }
+
+    tooltip.style.top = `${topo}px`;
+    tooltip.style.left = `${esquerda}px`;
 }
 
 function removerDestaqueAlvo() {
     if (estadoTutorial.alvoAtualDestacado) {
-        estadoTutorial.alvoAtualDestacado.classList.remove('relative', 'z-[9999]', 'shadow-lg');
-        estadoTutorial.alvoAtualDestacado.style.pointerEvents = '';
+        const el = estadoTutorial.alvoAtualDestacado;
+        
+        // Remove as classes de destaque gerais
+        el.classList.remove('relative', 'z-[9999]', 'shadow-lg', 'ring-4', 'ring-[#DAC2FF]');
+        el.style.pointerEvents = '';
+        
+        // Remove as classes brancas apenas se for ícone (evita o bug de botões ficarem transparentes)
+        if (estadoTutorial.isIcone) {
+            el.classList.remove('bg-white', 'rounded-lg', 'p-2');
+            el.style.display = ''; 
+        }
+        
         estadoTutorial.alvoAtualDestacado = null;
+    }
+
+    // Devolve a navbar para o seu lugar normal após o destaque do ícone terminar
+    if (estadoTutorial.navbarElevada) {
+        estadoTutorial.navbarElevada.classList.remove('z-[9999]');
+        estadoTutorial.navbarElevada.classList.add('z-50');
+        estadoTutorial.navbarElevada = null;
     }
 }
