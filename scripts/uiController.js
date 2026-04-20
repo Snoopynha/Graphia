@@ -10,26 +10,18 @@ import { atualizarPassoAnimacao } from './animacao.js';
 // Antigo mostrarRepresentacao() - grafo-codigo.js
 export function mostrarRepresentacao(tipo) {
     const { vertices, arestas } = estado;
-    let codigo = '';
-    let descricao = '';
+    let resultado;
 
     switch (tipo) {
-        case 'lista':
-            codigo = gerarListaAdjacencia(vertices, arestas);
-            descricao = 'A Lista de Adjacência representa o grafo usando um conjunto de listas onde cada vértice aponta para todos os vértices aos quais está conectado. É uma forma eficiente de armazenar grafos esparsos, pois registra apenas as arestas existentes.';
+        case 'lista':resultado = gerarListaAdjacencia(vertices, arestas);
             break;
-        case 'matrizAdj':
-            codigo = gerarMatrizAdjacencia(vertices, arestas);
-            descricao = 'A Matriz de Adjacência representa o grafo em uma tabela onde linhas e colunas são vértices. Um valor 1 indica que existe uma aresta entre dois vértices, e 0 indica que não existe. Em grafos direcionados, a posição (u,v) marca a direção da aresta de u para v.';
+        case 'matrizAdj': resultado = gerarMatrizAdjacencia(vertices, arestas);
             break;
-        case 'matrizInc':
-            codigo = gerarMatrizIncidencia(vertices, arestas);
-            descricao = 'A Matriz de Incidência representa o grafo usando uma tabela onde cada coluna é uma aresta e cada linha é um vértice. Em grafos não direcionados, um valor 1 indica que o vértice participa da aresta. Em grafos direcionados, usa-se -1 para o vértice de origem da aresta e 1 para o vértice de destino.';
+        case 'matrizInc': resultado = gerarMatrizIncidencia(vertices, arestas);
             break;
     }
 
-    document.getElementById('code-output').textContent = codigo;
-    document.getElementById('descricao-output').textContent = descricao;
+    renderizarResposta(resultado);
 }
 
 /**
@@ -335,6 +327,106 @@ function atualizarOutputBusca(algoritmo, verticeInicial, verticeFinal) {
 }
 
 /**
+ * Renderiza a representação do grafo na interface.
+ *
+ * A função exibe uma tabela HTML no elemento #code-output,
+ * podendo renderizar três tipos de estruturas:
+ *
+ * - Lista de adjacência (res.tipo === 'lista')
+ * - Matriz de adjacência (res.tipo === 'matrizAdj')
+ * - Matriz de incidência (res.tipo === 'matrizInc')
+ *
+ * Também adiciona interatividade:
+ * - Hover em células destaca arestas no grafo visual
+ *
+ * @param {object} res - Estrutura retornada pelas funções de geração do grafo.
+ * @param {string} res.tipo - Tipo da representação ('lista', 'matrizAdj', 'matrizInc').
+ * @param {Array<Array<number>>} [res.matriz] - Matriz de adjacência ou incidência (quando aplicável).
+ * @param {Array<string>} [res.linhas] - Rótulos das linhas (vértices).
+ * @param {Array<string>} [res.cabecalho] - Rótulos das colunas (vértices ou arestas).
+ * @param {object} [res.dados] - Estrutura da lista de adjacência (quando tipo === 'lista').
+ * @param {Array<object>} [res.objetosArestas] - Referência às arestas (uso na matriz de incidência).
+ */
+function renderizarResposta(res) {
+    const container = document.getElementById('code-output');
+    container.innerHTML = '';
+
+    const tabela = document.createElement('table');
+    tabela.className = 'w-full text-left border-collapse font-mono text-sm';
+
+    // Se for Matriz (Adj ou Inc)
+    if (res.matriz) {
+        // Cabeçalho
+        const thead = document.createElement('thead');
+        const trH = document.createElement('tr');
+        trH.innerHTML = `<th class="border p-2 bg-gray-100"></th>` + 
+                        res.cabecalho.map(h => `<th class="border p-2 bg-gray-100 text-center">${h}</th>`).join('');
+        thead.appendChild(trH);
+        tabela.appendChild(thead);
+
+        // Corpo
+        res.matriz.forEach((linha, i) => {
+            const tr = document.createElement('tr');
+            const thLinha = document.createElement('th');
+            thLinha.className = 'border p-2 bg-gray-50';
+            thLinha.innerText = res.linhas[i];
+            tr.appendChild(thLinha);
+
+            linha.forEach((valor, j) => {
+                const td = document.createElement('td');
+                td.className = 'border p-2 text-center hover:bg-yellow-100 cursor-default transition-colors';
+                td.innerText = valor;
+
+                // Destaca
+                td.onmouseenter = () => {
+                    if (valor !== 0) {
+                        // Se for Matriz de Adjacência: brilha a aresta entre i e j
+                        if (res.tipo === 'matrizAdj') {
+                            const vOrigem = res.linhas[i];
+                            const vDestino = res.cabecalho[j];
+                            destacarAresta(vOrigem, vDestino);
+                        } 
+                        // Se for Matriz de Incidência: brilha a aresta da coluna j
+                        else if (res.tipo === 'matrizInc') {
+                            const aresta = res.objetosArestas[j];
+                            aresta.cor = '#facc15';
+                        }
+                    }
+                };
+
+                td.onmouseleave = () => {
+                    estado.arestas.forEach(a => a.cor = null);
+                };
+
+                tr.appendChild(td);
+            });
+            tabela.appendChild(tr);
+        });
+    }
+
+    if (res.tipo === 'lista') {
+        const tabela = document.createElement('table');
+        tabela.className = 'w-full text-left border-collapse font-mono text-sm';
+        
+        Object.entries(res.dados).forEach(([vertice, vizinhos]) => {
+            const tr = document.createElement('tr');
+            
+            tr.innerHTML = `
+                <th class="border p-2 bg-gray-100">${vertice}</th>
+                <td class="border p-2">${vizinhos.join(', ')}</td>
+            `;
+            
+            tabela.appendChild(tr);
+        });
+
+        container.appendChild(tabela);
+        return;
+    }
+
+    container.appendChild(tabela);
+}
+
+/**
  * Controla a visibilidade da barra lateral e seus elementos.
  */
 // Antigo toggleSidebar() - index.html
@@ -361,4 +453,19 @@ export function alternarBarraLateral() {
         iconeSeta.classList.remove("fa-chevron-right");
         iconeSeta.classList.add("fa-chevron-left");
     }
+}
+
+/**
+ * Destaca visualmente uma aresta entre dois vértices no grafo.
+ * Usado para feedback interativo ao passar o mouse na matriz.
+ *
+ * @param {string} rotuloDe - Rótulo do vértice de origem.
+ * @param {string} rotuloPara - Rótulo do vértice de destino.
+ */
+function destacarAresta(rotuloDe, rotuloPara) {
+    const aresta = estado.arestas.find(a => 
+        (a.de.rotulo === rotuloDe && a.para.rotulo === rotuloPara) ||
+        (!a.direcionada && a.de.rotulo === rotuloPara && a.para.rotulo === rotuloDe)
+    );
+    if (aresta) aresta.cor = '#facc15';
 }

@@ -2,53 +2,46 @@
  * Gera a representação em lista de adjacência do grafo.
  * @param {Array<object>} vertices - Lista de vértices do grafo (cada vértice deve ter um atributo 'rotulo').
  * @param {Array<object>} arestas - Lista de arestas do grafo (cada aresta deve ter atributos 'de' e 'para', que são rótulos de vértices).
- * @returns {string} - Representação em lista de adjacência do grafo.
+ * @returns {object} - Objeto contendo a lista de adjacência.
  * 
  * @example
  * Exemplo de saída:
- * A -> B, C
- * B -> A
- * C -> A
+ *{
+ * tipo: "lista",
+ * dados: {
+ *  A: ["B", "C"],
+ *  B: ["A"],
+ *  C: []
+ *  }
+ *}
  */
 // Antigo window.gerarListaAdjacencia = function() - grafo-manipulacao.js
 export function gerarListaAdjacencia(vertices, arestas) {
     const lista = {};
-    // Adiciona todos os vértices à lista
-    for (let v of vertices) {
-        lista[v.rotulo] = [];
-    }
-    // Adiciona as arestas à lista
-    for (let a of arestas) {
-        // Supondo que a.de e a.para são objetos vértice com atributo rotulo
+    // Adiciona todos os vértices
+    vertices.forEach(v => lista[v.rotulo] = []);
+    // Percorre as arestas e monta as conexões
+    arestas.forEach(a => {
         lista[a.de.rotulo].push(a.para.rotulo);
-        // Se a aresta não for direcionada, adiciona o vértice de origem à lista de adjacência do vértice de destino
-        if (!a.direcionada) {
-            lista[a.para.rotulo].push(a.de.rotulo);
-        }
-    }
+        if (!a.direcionada) lista[a.para.rotulo].push(a.de.rotulo);
+    });
 
-    let saida = '';
-    // Gera a string de saída
-    for (let chave in lista) {
-        // Remove espaços em branco e vírgulas no final da string
-        saida += `${chave} -> ${lista[chave].join(', ')}\n`;
-    }
-
-    return saida;
+    return { tipo: 'lista', dados: lista };
 }
 
 /**
  * Gera a representação em matriz de adjacência do grafo.
  * @param {Array<object>} vertices - Lista de vértices do grafo (cada vértice deve ter um atributo 'rotulo').
  * @param {Array<object>} arestas - Lista de arestas do grafo (cada aresta deve ter atributos 'de' e 'para', que são rótulos de vértices).
- * @returns {string} - Representação em matriz de adjacência do grafo.
+ * @returns {object} - Objeto contendo matriz de adjacência.
  * 
  * @example
- * Exemplo de saída:
- *    A  B  C
- * A  0  1  1
- * B  1  0  0
- * C  1  0  0
+ *{
+ * tipo: 'matrizAdj',
+ * cabecalho: rotulos,
+ * linhas: rotulos,
+ * matriz: [...]
+ *}
  */
 // Antigo window.gerarMatrizAdjacencia = function() - grafo-manipulacao.js
 export function gerarMatrizAdjacencia(vertices, arestas) {
@@ -56,25 +49,21 @@ export function gerarMatrizAdjacencia(vertices, arestas) {
     const rotulos = vertices.map(v => v.rotulo);
     const n = rotulos.length;
     // Inicializa a matriz com zeros
-    // Os vertices são indexados de 0 a n-1
     const matriz = Array.from({ length: n }, () => Array(n).fill(0));
 
     // Preenche a matriz com as arestas
-    for (let a of arestas) {
-        // Supondo que a.de e a.para são objetos vértice com atributo rotulo
+    arestas.forEach(a => {
+        // Encontra os índices dos vértices
         const i = rotulos.indexOf(a.de.rotulo);
         const j = rotulos.indexOf(a.para.rotulo);
-        // Verifica se os índices são válidos
         if (i !== -1 && j !== -1) {
             matriz[i][j] = 1;
-            // Se a aresta não for direcionada, adiciona o vértice de origem à lista de adjacência do vértice de destino
-            if (!a.direcionada) {
-                matriz[j][i] = 1;
-            }
+            // Se não for direcionado, adiciona conexão inversa
+            if (!a.direcionada) matriz[j][i] = 1;
         }
-    }
+    });
 
-    return formatarMatriz(rotulos, rotulos, matriz, 'Matriz de Adjacência');
+    return { tipo: 'matrizAdj', cabecalho: rotulos, linhas: rotulos, matriz };
 }
 
 /**
@@ -93,34 +82,25 @@ export function gerarMatrizAdjacencia(vertices, arestas) {
 // Antigo window.gerarMatrizIncidencia = function() - grafo-manipulacao.js
 export function gerarMatrizIncidencia(vertices, arestas) {
     // Obtém os rótulos dos vértices
-    const rotulos = vertices.map(v => v.rotulo);
-    // Pega o número de vértices e arestas
-    const n = rotulos.length;
-    const m = arestas.length;
-    // Inicializa a matriz com zeros
-    // Os vertices são indexados de 0 a n-1 e as arestas de 0 a m-1
-    const matriz = Array.from({ length: n }, () => Array(m).fill(0));
+    const rotulosV = vertices.map(v => v.rotulo);
+    // Gera rótulos para as arestas
+    const rotulosA = arestas.map((_, i) => `A${i + 1}`);
+    const matriz = Array.from({ length: rotulosV.length }, () => Array(arestas.length).fill(0));
 
     // Preenche a matriz com as arestas
-    arestas.forEach((a, indice) => {
-        const i = rotulos.indexOf(a.de.rotulo);
-        const j = rotulos.indexOf(a.para.rotulo);
-        // Verifica se os índices são válidos
-        if (i !== -1 && j !== -1) {
-            // Para arestas direcionadas, usa -1 para o vértice de origem e 1 para o vértice de destino
-            if (a.direcionada) {
-                matriz[i][indice] = -1;
-                matriz[j][indice] = 1;
-            } else {
-                matriz[i][indice] = 1;
-                matriz[j][indice] = 1;
-            }
+    arestas.forEach((a, j) => {
+        const deIdx = rotulosV.indexOf(a.de.rotulo);
+        const paraIdx = rotulosV.indexOf(a.para.rotulo);
+        if (a.direcionada) {
+            matriz[deIdx][j] = -1;
+            matriz[paraIdx][j] = 1;
+        } else {
+            matriz[deIdx][j] = 1;
+            matriz[paraIdx][j] = 1;
         }
     });
 
-    // Gera rótulos para as arestas
-    const rotulosArestas = arestas.map((_, indice) => `E${indice + 1}`);
-    return formatarMatriz(rotulos, rotulosArestas, matriz, 'Matriz de Incidência');
+    return { tipo: 'matrizInc', cabecalho: rotulosA, linhas: rotulosV, matriz, objetosArestas: arestas };
 }
 
 // --- FUNÇÕES E CLASSES AUXILIARES (NÃO EXPORTADAS) ---
