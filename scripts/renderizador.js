@@ -11,6 +11,10 @@ export function inicializarCanvas() {
     const container = document.getElementById('canvas-container');
     canvas = createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('canvas-container');
+    canvas.style('display', 'block');
+    canvas.style('position', 'absolute');
+    canvas.style('top', '0');
+    canvas.style('left', '0');
     textAlign(CENTER, CENTER);
     textSize(20);
 
@@ -26,7 +30,7 @@ export function inicializarCanvas() {
  */
 // Antigo draw() - grafo-editor.js
 export function desenharGrafo() {
-    background(255);
+    clear();
     strokeWeight(2);
 
     // --- 1. Desenha as arestas ---
