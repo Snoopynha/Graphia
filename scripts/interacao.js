@@ -95,10 +95,17 @@ export function tratarClique() {
                     dy: mouseY - v.y
                 }));
             } else {
-                // Clicou fora de qualquer vértice, limpa todas as seleções
-                estado.verticesSelecionados.forEach(v => v.cor = null);
-                estado.verticesSelecionados = [];
-                estado.arrastando = false;
+                // Tenta ver se clicou em uma aresta já que não clicou em um vértice
+                const arestaClicada = obterArestaClicada(mouseX, mouseY);
+
+                if (arestaClicada) {
+                    abrirEditorDePeso(arestaClicada);
+                } else {
+                    // Clicou fora de qualquer vértice, limpa todas as seleções
+                    estado.verticesSelecionados.forEach(v => v.cor = null);
+                    estado.verticesSelecionados = [];
+                    estado.arrastando = false;
+                }
             }
             break;
 
@@ -184,4 +191,144 @@ function obterVerticeClicado(mx, my) {
     }
 
     return null;
+}
+
+/**
+ * Função auxiliar para encontrar a aresta clicada usando distância ponto-segmento.
+ * @param {number} mx - coordenada x do clique
+ * @param {number} my - coordenada y do clique
+ * @returns {object|null} - a aresta clicada ou null se nenhuma foi clicada
+ */
+function obterArestaClicada(mx, my) {
+    const TOLERANCIA = 10;
+
+    // Verifica do último ao primeiro para priorizar arestas desenhadas por cima
+    for (let i = estado.arestas.length - 1; i >= 0; i--) {
+        const aresta = estado.arestas[i];
+        const x1 = aresta.de.x;
+        const y1 = aresta.de.y;
+        const x2 = aresta.para.x;
+        const y2 = aresta.para.y;
+
+        const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+        if (l2 === 0) continue; // Caso os vértices estejam na mesma coordenada
+
+        // Projeta o ponto do mouse no vetor da aresta para achar o ponto mais próximo
+        let t = ((mx - x1) * (x2 - x1) + (my - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        const projX = x1 + t * (x2 - x1);
+        const projY = y1 + t * (y2 - y1);
+
+        // Calcula a distância do clique até o ponto projetado na aresta
+        const distancia = dist(mx, my, projX, projY);
+        if (distancia <= TOLERANCIA) {
+            return aresta;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Cria uma interface HTML flutuante para editar o peso da aresta
+ * @param {object} aresta - A aresta que foi clicada
+ */
+function abrirEditorDePeso(aresta) {
+    // Garante que o objeto de custos existe no estado
+    if (!estado.custosArestas) estado.custosArestas = {};
+
+    const chaveDePara = `${aresta.de.rotulo}-${aresta.para.rotulo}`;
+    const chaveParaDe = `${aresta.para.rotulo}-${aresta.de.rotulo}`;
+    
+    // Pega o valor atual (assume 1 se não existir)
+    let valorAtual = estado.custosArestas[chaveDePara] !== undefined ? estado.custosArestas[chaveDePara] : 1;
+
+    // Remove o modal anterior se por acaso existir algum preso na tela
+    let modalExistente = document.getElementById('modal-editor-peso');
+    if (modalExistente) modalExistente.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'modal-editor-peso';
+    Object.assign(overlay.style, {
+        position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        display: 'flex', justifyContent: 'center', alignItems: 'center', 
+        zIndex: '9999'
+    });
+
+    const caixa = document.createElement('div');
+    Object.assign(caixa.style, {
+        backgroundColor: '#ffffff', padding: '20px', borderRadius: '8px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.2)', width: '280px',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+    });
+
+    const titulo = document.createElement('h3');
+    const seta = aresta.direcionada ? '→' : '↔';
+    titulo.innerText = `Editar peso (${aresta.de.rotulo} ${seta} ${aresta.para.rotulo})`;
+    Object.assign(titulo.style, { 
+        margin: '0 0 15px 0', fontSize: '16px', color: '#1f2937' 
+    });
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = valorAtual;
+    Object.assign(input.style, {
+        width: '100%', padding: '10px', marginBottom: '15px',
+        border: '1px solid #d1d5db', borderRadius: '4px', 
+        boxSizing: 'border-box', fontSize: '14px', outline: 'none'
+    });
+    input.onfocus = () => input.style.borderColor = '#3b82f6';
+    input.onblur = () => input.style.borderColor = '#d1d5db';
+
+    const containerBotoes = document.createElement('div');
+    Object.assign(containerBotoes.style, { 
+        display: 'flex', justifyContent: 'flex-end', gap: '10px' 
+    });
+
+    const salvarPeso = () => {
+        const novoPeso = parseFloat(input.value);
+        if (!isNaN(novoPeso)) {
+            // Atualiza a aresta
+            estado.custosArestas[chaveDePara] = novoPeso;
+            if (!aresta.direcionada) {
+                estado.custosArestas[chaveParaDe] = novoPeso;
+            }
+        }
+        overlay.remove();
+    };
+
+    const btnCancelar = document.createElement('button');
+    btnCancelar.innerText = 'Cancelar';
+    Object.assign(btnCancelar.style, {
+        padding: '8px 12px', border: 'none', backgroundColor: '#f3f4f6',
+        color: '#374151', borderRadius: '4px', cursor: 'pointer', fontWeight: '500'
+    });
+    btnCancelar.onclick = () => overlay.remove();
+
+    const btnSalvar = document.createElement('button');
+    btnSalvar.innerText = 'Salvar';
+    Object.assign(btnSalvar.style, {
+        padding: '8px 16px', border: 'none', backgroundColor: '#3b82f6',
+        color: '#ffffff', borderRadius: '4px', cursor: 'pointer', fontWeight: '500'
+    });
+    btnSalvar.onclick = salvarPeso;
+
+    // Permite salvar apertando "Enter" e cancelar com "Escape"
+    input.onkeydown = (e) => { 
+        if (e.key === 'Enter') salvarPeso(); 
+        if (e.key === 'Escape') overlay.remove(); 
+    };
+
+    // Monta o modal na tela
+    containerBotoes.appendChild(btnCancelar);
+    containerBotoes.appendChild(btnSalvar);
+    caixa.appendChild(titulo);
+    caixa.appendChild(input);
+    caixa.appendChild(containerBotoes);
+    overlay.appendChild(caixa);
+    document.body.appendChild(overlay);
+
+    input.focus();
+    input.select();
 }
