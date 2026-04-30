@@ -11,16 +11,27 @@ import { atualizarPassoAnimacao } from './animacao.js';
 export function mostrarRepresentacao(tipo) {
     const { vertices, arestas } = estado;
     let resultado;
+    let descricao;
 
     switch (tipo) {
-        case 'lista':resultado = gerarListaAdjacencia(vertices, arestas);
+        case 'lista':
+            resultado = gerarListaAdjacencia(vertices, arestas);
+            descricao = 'A Lista de Adjacência representa o grafo usando um conjunto de listas onde cada vértice aponta para todos os vértices aos quais está conectado. Sendo uma forma eficiente de armazenar grafos esparsos, pois registra apenas as arestas existentes.';
             break;
-        case 'matrizAdj': resultado = gerarMatrizAdjacencia(vertices, arestas);
+        case 'matrizAdj': 
+            resultado = gerarMatrizAdjacencia(vertices, arestas);
+            descricao = 'A Matriz de Adjacência representa o grafo em uma tabela onde linhas e colunas são vértices. Um valor 1 indica que existe uma aresta entre dois vértices, e 0 indica que não existe. Em grafos direcionados, a posição (u,v) marca a direção da aresta de u para v.';
             break;
-        case 'matrizInc': resultado = gerarMatrizIncidencia(vertices, arestas);
+        case 'matrizInc': 
+            resultado = gerarMatrizIncidencia(vertices, arestas);
+            descricao = 'A Matriz de Incidência representa o grafo usando uma tabela onde cada coluna é uma aresta e cada linha é um vértice. Em grafos não direcionados, um valor 1 indica que o vértice participa da aresta. Em grafos direcionados, usa-se -1 para o vértice de origem da aresta e 1 para o vértice de destino.';
             break;
     }
 
+    const areaDescricao = document.getElementById('descricao-output');
+    if (areaDescricao) {
+        areaDescricao.textContent = descricao;
+    }
     renderizarResposta(resultado);
 }
 
